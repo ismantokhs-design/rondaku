@@ -3,38 +3,43 @@
   <div class="flex items-center justify-between">
     <div>
       <h1 class="text-xl font-bold text-white">Scan Barcode / QR Warga</h1>
-      <p class="text-sm text-slate-400 mt-0.5">Gunakan kamera atau pilih data warga secara manual</p>
+      <p class="text-sm text-slate-400 mt-0.5">Arahkan kamera ke Barcode / QR Code</p>
     </div>
     <button onclick="loadPage('home')" class="w-10 h-10 bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-300 rounded-2xl flex items-center justify-center transition shadow-md cursor-pointer shrink-0 ml-3" title="Kembali ke Beranda">
       <i class="fa-solid fa-arrow-left text-sm"></i>
     </button>
   </div>
 
-  <!-- Tombol Utama Buka Kamera Langsung -->
-  <div class="bg-slate-800/60 border border-slate-800 p-6 rounded-3xl space-y-4 text-center">
-    <div class="w-20 h-20 bg-purple-600/20 text-purple-400 rounded-3xl flex items-center justify-center text-3xl mx-auto border border-purple-500/30 shadow-lg shadow-purple-600/20">
-      <i class="fa-solid fa-camera-retro"></i>
-    </div>
-    
-    <div>
-      <h3 class="font-bold text-base text-white">Pindai Barcode / QR Kartu Warga</h3>
-      <p class="text-xs text-slate-400 mt-1 px-4">
-        Klik tombol di bawah untuk membuka kamera perangkat Anda dan memindai kode pada kartu warga atau pos ronda.
-      </p>
+  <!-- Scanner Viewfinder Box Live Camera -->
+  <div class="bg-slate-800/60 border border-slate-800 p-5 rounded-3xl space-y-4 text-center">
+    <div class="relative w-full aspect-square max-w-sm mx-auto bg-slate-900 border-2 border-dashed border-purple-500/60 rounded-3xl overflow-hidden flex flex-col items-center justify-center shadow-inner">
+      
+      <!-- Area Render Kamera Live -->
+      <div id="reader" class="absolute inset-0 w-full h-full object-cover"></div>
+
+      <!-- Placeholder Animasi Ketika Kamera Belum Aktif -->
+      <div id="scanner-placeholder" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/90 z-10 pointer-events-none">
+        <div class="space-y-2 text-slate-500">
+          <i class="fa-solid fa-camera text-4xl animate-pulse text-purple-400/60"></i>
+          <p class="text-xs">Menyalakan Kamera Live...</p>
+        </div>
+      </div>
+
+      <!-- Bingkai Target Laser Animasi -->
+      <div class="absolute inset-8 border border-purple-500/30 rounded-2xl pointer-events-none flex items-center justify-center z-20">
+        <div class="w-full h-0.5 bg-gradient-to-r from-transparent via-purple-500 to-transparent animate-bounce"></div>
+      </div>
     </div>
 
-    <!-- Tombol Pemicu Kamera Asli (File Capture) -->
-    <div class="pt-2 flex flex-col space-y-3">
-      <label class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold py-3.5 px-6 rounded-2xl shadow-lg shadow-purple-600/30 transition flex items-center justify-center space-x-2.5 cursor-pointer">
-        <i class="fa-solid fa-camera text-base"></i>
-        <span class="text-xs tracking-wide">Buka Kamera / Scan Barcode</span>
-        <!-- Input khusus capture untuk memicu izin dan kamera HP -->
-        <input type="file" accept="image/*" capture="environment" onchange="window.processScannedImage(event)" class="hidden">
-      </label>
+    <p class="text-xs text-slate-400 px-4">
+      Pindai kode pada kartu warga atau pos ronda untuk mencatat kehadiran dan jimpitan secara otomatis.
+    </p>
 
-      <button type="button" onclick="window.openManualScanModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-3 px-6 rounded-2xl border border-slate-700 transition flex items-center justify-center space-x-2 cursor-pointer">
-        <i class="fa-solid fa-keyboard text-purple-400"></i>
-        <span class="text-xs">Cari No. KK / Pilih Manual</span>
+    <!-- Tombol Alternatif / Input Manual -->
+    <div class="flex items-center justify-center space-x-3 pt-2">
+      <button onclick="window.openManualScanModal()" class="w-full bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 text-xs font-semibold py-3 px-6 rounded-2xl border border-purple-500/30 transition flex items-center justify-center space-x-2 cursor-pointer">
+        <i class="fa-solid fa-keyboard"></i>
+        <span>Cari No. KK / Pilih Manual</span>
       </button>
     </div>
   </div>
@@ -149,14 +154,15 @@
   </div>
 </div>
 
-<!-- PUSTAKA PENDUKUNG PEMBACA GAMBAR BARCODE (ZXING) -->
-<script src="https://unpkg.com/@zxing/library@latest"></script>
+<!-- PUSTAKA HTML5 QR CODE / BARCODE SCANNER (LIVE CAMERA) -->
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
-<!-- SKRIP LOGIKA KAMERA DAN DATABASE -->
+<!-- SKRIP LOGIKA LIVE CAMERA SCANNER DAN DATABASE -->
 <script>
   let scannedWargaData = null;
   let cachedNilaiJimpitan = "1.000";
   let allWargaCache = [];
+  let html5QrCodeScanner = null;
 
   // Ambil konfigurasi jimpitan
   async function fetchNilaiJimpitanConfig() {
@@ -174,44 +180,54 @@
   }
   fetchNilaiJimpitanConfig();
 
-  // Proses gambar yang diambil dari kamera HP secara langsung
-  window.processScannedImage = async function(event) {
-    const file = event.target.files[0];
-    if (!file) return;
+  // Inisialisasi Kamera Live Scanner
+  async function startLiveScanner() {
+    const placeholder = document.getElementById('scanner-placeholder');
+    const readerEl = document.getElementById('reader');
+    if (!readerEl) return;
 
-    if (typeof window.showToast === 'function') {
-      window.showToast("Membaca barcode dari gambar kamera...");
+    if (html5QrCodeScanner) {
+      try {
+        await html5QrCodeScanner.stop();
+        html5QrCodeScanner.clear();
+      } catch (e) {}
+      html5QrCodeScanner = null;
     }
 
-    const reader = new FileReader();
-    reader.onload = async function(e) {
-      const img = new Image();
-      img.onload = async function() {
-        try {
-          const codeReader = new ZXing.BrowserBarcodeReader();
-          const result = await codeReader.decodeFromImage(img);
-          if (result && result.text) {
-            window.handleScannedCode(result.text);
-          } else {
-            if (typeof window.showToast === 'function') {
-              window.showToast("Barcode tidak terdeteksi, coba ulangi foto atau gunakan pilih manual.", "error");
-            }
-          }
-        } catch (err) {
-          console.error("Gagal mendecode barcode:", err);
-          if (typeof window.showToast === 'function') {
-            window.showToast("Barcode gagal dibaca. Pastikan posisi jelas atau gunakan Cari Manual.", "error");
-          }
-        }
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-    // Reset input agar bisa dipakai ulang
-    event.target.value = '';
-  };
+    try {
+      html5QrCodeScanner = new Html5Qrcode("reader");
+      const config = { fps: 10, qrbox: { width: 250, height: 250 } };
 
-  // Handle kode hasil scan / pencarian
+      await html5QrCodeScanner.start(
+        { facingMode: "environment" },
+        config,
+        (decodedText) => {
+          if (decodedText) {
+            window.handleScannedCode(decodedText);
+          }
+        },
+        (errorMessage) => {
+          // Abaikan error frame kosong
+        }
+      );
+
+      if (placeholder) {
+        placeholder.style.display = 'none';
+      }
+    } catch (err) {
+      console.error("Gagal menyalakan kamera live:", err);
+      if (placeholder) {
+        placeholder.innerHTML = `
+          <div class="space-y-2 text-rose-400 p-4 text-center">
+            <i class="fa-solid fa-triangle-exclamation text-3xl"></i>
+            <p class="text-xs">Gagal menyalakan kamera otomatis. Gunakan tombol Cari No. KK / Pilih Manual di bawah.</p>
+          </div>
+        `;
+      }
+    }
+  }
+
+  // Handle kode hasil scan / pencarian dengan Peringatan jika tidak terdaftar
   window.handleScannedCode = async function(codeText) {
     const cleanCode = String(codeText).trim();
     if (!cleanCode) return;
@@ -220,6 +236,19 @@
       const { db } = await import('./db.js');
       const { collection, getDocs, query, where } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
 
+      // Cek apakah kode barcode / No KK terdaftar di koleksi "warga"
+      const q = query(collection(db, "warga"), where("nokk", "==", cleanCode));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        // NOTIFIKASI JIKA BARCODE TIDAK ADA DI DATA WARGA
+        if (typeof window.showToast === 'function') {
+          window.showToast(`Peringatan: Barcode / No. KK "${cleanCode}" tidak ditemukan di dalam data warga!`, "error");
+        }
+        return;
+      }
+
+      // Cek duplikasi absensi hari ini
       const todayStr = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
       const historyQuery = query(collection(db, "scan_history"), where("nokk", "==", cleanCode));
       const historySnapshot = await getDocs(historyQuery);
@@ -239,21 +268,16 @@
         return;
       }
 
-      const q = query(collection(db, "warga"), where("nokk", "==", cleanCode));
-      const querySnapshot = await getDocs(q);
-
-      if (querySnapshot.empty) {
-        if (typeof window.showToast === 'function') {
-          window.showToast(`Kode "${cleanCode}" tidak ditemukan dalam database warga!`, "warning");
-        }
-        return;
-      }
-
       const docSnap = querySnapshot.docs[0];
       scannedWargaData = {
         id: docSnap.id,
         ...docSnap.data()
       };
+
+      // Jeda scanner sementara saat modal konfirmasi terbuka
+      if (html5QrCodeScanner) {
+        try { await html5QrCodeScanner.pause(); } catch(e) {}
+      }
 
       window.openJimpitanConfirmModal();
     } catch (err) {
@@ -290,16 +314,19 @@
     }
   };
 
-  window.closeJimpitanConfirmModal = function() {
+  window.closeJimpitanConfirmModal = async function() {
     const modal = document.getElementById('jimpitan-confirm-modal');
     const card = document.getElementById('jimpitan-confirm-card');
     if (modal && card) {
       modal.classList.add('opacity-0');
       card.classList.remove('scale-100');
       card.classList.add('scale-95');
-      setTimeout(() => {
+      setTimeout(async () => {
         modal.classList.add('hidden');
         scannedWargaData = null;
+        if (html5QrCodeScanner) {
+          try { await html5QrCodeScanner.resume(); } catch(e) {}
+        }
       }, 300);
     }
   };
@@ -409,6 +436,10 @@
 
   // Modal Manual Warga
   window.openManualScanModal = async function() {
+    if (html5QrCodeScanner) {
+      try { await html5QrCodeScanner.pause(); } catch(e) {}
+    }
+
     const modal = document.getElementById('manual-scan-modal');
     const card = document.getElementById('manual-scan-card');
     const container = document.getElementById('manual-warga-list-container');
@@ -433,14 +464,19 @@
     }
   };
 
-  window.closeManualScanModal = function() {
+  window.closeManualScanModal = async function() {
     const modal = document.getElementById('manual-scan-modal');
     const card = document.getElementById('manual-scan-card');
     if (modal && card) {
       modal.classList.add('opacity-0');
       card.classList.remove('scale-100');
       card.classList.add('scale-95');
-      setTimeout(() => modal.classList.add('hidden'), 300);
+      setTimeout(async () => {
+        modal.classList.add('hidden');
+        if (html5QrCodeScanner) {
+          try { await html5QrCodeScanner.resume(); } catch(e) {}
+        }
+      }, 300);
     }
   };
 
@@ -534,8 +570,9 @@
     }
   };
 
-  // Muat riwayat saat halaman aktif
+  // Jalankan kamera live saat halaman aktif
   setTimeout(() => {
+    startLiveScanner();
     window.loadScanHistory();
-  }, 300);
+  }, 400);
 </script>
