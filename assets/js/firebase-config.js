@@ -2,7 +2,7 @@
 // KONFIGURASI FIREBASE (PROJECT: rondaku-d4f5e)
 // ==========================================
 
-// Import SDK Firebase dari CDN (sesuai versi 10.8.0 yang Anda gunakan di project)
+// Import SDK Firebase dari CDN (versi 10.8.0)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { 
   getFirestore, 
@@ -15,7 +15,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
 
-// Konfigurasi kredensial asli Anda
+// Konfigurasi kredensial Firebase Anda
 const firebaseConfig = {
   apiKey: "AIzaSyD7EL0i57nkHRIWkxh1QFGIcnLncmY9Zz8",
   authDomain: "rondaku-d4f5e.firebaseapp.com",
@@ -42,4 +42,5 @@ window.firebaseFirestore = {
   updateDoc 
 };
 
-export { db };
+// REVISI: Ekspor 'app' dan 'db' secara bersamaan agar aman diimpor dari file mana saja
+export { app, db };

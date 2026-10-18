@@ -18,6 +18,36 @@
   <link rel="manifest" href="manifest.json">
   <!-- CSS Khusus untuk menyembunyikan scrollbar tapi tetap bisa digeser -->
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+      background-color: #060913;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Container Aplikasi Bergaya HP / Smartphone (Rasio Vertikal Mobile di PC) */
+    #app-container {
+      width: 100%;
+      max-width: 412px;
+      height: 100vh;
+      max-height: 860px;
+      background-color: #0f172a;
+      color: #f1f5f9;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow-x: hidden;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 0 12px #1e293b, 0 0 0 14px #334155;
+      border-radius: 36px;
+    }
+
     #scrollable-content::-webkit-scrollbar {
       display: none !important;
       width: 0 !important;
@@ -29,13 +59,13 @@
     }
   </style>
 </head>
-<body class="bg-slate-900 text-slate-100 font-sans antialiased h-full overflow-hidden flex justify-center">
+<body class="bg-slate-950 text-slate-100 font-sans antialiased h-full overflow-hidden flex justify-center items-center">
 
   <!-- TOAST NOTIFICATION CONTAINER -->
   <div id="toast-container" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 flex flex-col space-y-2 pointer-events-none w-11/12 max-w-sm"></div>
 
   <!-- CUSTOM SMOOTH LOGOUT MODAL -->
-  <div id="custom-logout-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+  <div id="custom-logout-modal" class="absolute inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300">
     <div id="logout-modal-card" class="bg-slate-800 border border-slate-700 w-full max-w-xs rounded-3xl p-6 shadow-2xl transform scale-90 transition-transform duration-300 text-center space-y-4">
       <div class="w-14 h-14 bg-red-500/20 text-red-400 rounded-2xl flex items-center justify-center text-2xl mx-auto shadow-lg shadow-red-500/10">
         <i class="fa-solid fa-right-from-bracket"></i>
@@ -56,7 +86,7 @@
   </div>
 
   <!-- SCREEN TRANSITION KELUAR -->
-  <div id="logout-transition-overlay" class="fixed inset-0 bg-gradient-to-tr from-slate-950 via-slate-900 to-emerald-950 z-[100] flex flex-col justify-center items-center text-white opacity-0 invisible transition-all duration-500">
+  <div id="logout-transition-overlay" class="absolute inset-0 bg-gradient-to-tr from-slate-950 via-slate-900 to-emerald-950 z-[100] flex flex-col justify-center items-center text-white opacity-0 invisible transition-all duration-500">
     <div class="text-center space-y-3">
       <div class="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto text-emerald-400 text-2xl animate-pulse">
         <i class="fa-solid fa-shield-halved"></i>
@@ -68,10 +98,10 @@
   </div>
 
   <!-- Sidebar Overlay -->
-  <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-40 hidden transition-opacity"></div>
+  <div id="sidebar-overlay" class="absolute inset-0 bg-black/50 z-40 hidden transition-opacity"></div>
 
   <!-- Sidebar / Drawer Navigasi -->
-  <aside id="sidebar" class="fixed top-0 left-0 bottom-0 w-72 bg-slate-900 z-50 transform -translate-x-full transition-transform duration-300 ease-in-out border-r border-slate-800 flex flex-col">
+  <aside id="sidebar" class="absolute top-0 left-0 bottom-0 w-72 bg-slate-900 z-50 transform -translate-x-full transition-transform duration-300 ease-in-out border-r border-slate-800 flex flex-col rounded-l-[36px]">
     <div class="p-5 border-b border-slate-800 flex items-center justify-between">
       <div class="flex items-center space-x-3">
         <div class="bg-emerald-500/20 text-emerald-400 p-2.5 rounded-xl">
@@ -117,10 +147,10 @@
   </aside>
 
   <!-- Main Container -->
-  <div id="app-container" class="w-full max-w-md h-full bg-slate-900 shadow-2xl relative flex flex-col">
+  <div id="app-container">
     
     <!-- FIXED HEADER AREA -->
-    <header class="sticky top-0 bg-slate-900 z-30 p-5 pb-4 shadow-md shadow-slate-950/20 border-b border-slate-800">
+    <header class="sticky top-0 bg-slate-900 z-30 p-5 pb-4 shadow-md shadow-slate-950/20 border-b border-slate-800 rounded-t-[36px]">
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-2.5">
           <div class="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-sm">
@@ -172,7 +202,7 @@
     </main>
 
     <!-- CURVED BOTTOM NAVIGATION BAR -->
-    <nav class="absolute bottom-0 left-0 right-0 bg-slate-800/90 backdrop-blur-md border-t border-slate-700/50 px-6 py-2.5 flex items-center justify-between z-30 shadow-2xl">
+    <nav class="absolute bottom-0 left-0 right-0 bg-slate-800/90 backdrop-blur-md border-t border-slate-700/50 px-6 py-2.5 flex items-center justify-between z-30 shadow-2xl rounded-b-[36px]">
       <!-- Menu Kiri: Beranda -->
       <button id="nav-home" onclick="loadPage('home')" class="flex flex-col items-center text-emerald-400 space-y-1 transition">
         <i class="fa-solid fa-house text-lg"></i>
@@ -185,7 +215,7 @@
         <span class="text-[10px] font-medium">Jadwal</span>
       </button>
 
-      <!-- Tombol Scan QR Tengah (Telah diperbarui memanggil loadPage('scan')) -->
+      <!-- Tombol Scan QR Tengah -->
       <div class="absolute left-1/2 -top-5 transform -translate-x-1/2">
         <button onclick="loadPage('scan')" class="w-14 h-14 bg-gradient-to-tr from-emerald-600 to-teal-400 text-white rounded-full shadow-lg shadow-emerald-500/50 flex items-center justify-center text-xl ring-4 ring-slate-900 transition transform hover:scale-105 active:scale-95 cursor-pointer" title="Scan QR Pos">
           <i class="fa-solid fa-qrcode"></i>
