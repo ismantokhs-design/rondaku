@@ -3,30 +3,38 @@
   <div class="flex items-center justify-between">
     <div>
       <h1 class="text-xl font-bold text-white">Scan Barcode / QR Warga</h1>
-      <p class="text-sm text-slate-400 mt-0.5">Arahkan kamera ke Barcode / QR Code</p>
+      <p class="text-sm text-slate-400 mt-0.5">Aktifkan kamera atau pilih data warga secara manual</p>
     </div>
     <button onclick="loadPage('home')" class="w-10 h-10 bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-300 rounded-2xl flex items-center justify-center transition shadow-md cursor-pointer shrink-0 ml-3" title="Kembali ke Beranda">
       <i class="fa-solid fa-arrow-left text-sm"></i>
     </button>
   </div>
 
-  <!-- Scanner Viewfinder Box Live Camera -->
+  <!-- Scanner Viewfinder Box & Tombol Aktivasi Kamera -->
   <div class="bg-slate-800/60 border border-slate-800 p-5 rounded-3xl space-y-4 text-center">
     <div class="relative w-full aspect-square max-w-sm mx-auto bg-slate-900 border-2 border-dashed border-purple-500/60 rounded-3xl overflow-hidden flex flex-col items-center justify-center shadow-inner">
       
-      <!-- Area Render Kamera Live -->
+      <!-- Area Render Kamera / Hasil Scan -->
       <div id="reader" class="absolute inset-0 w-full h-full object-cover"></div>
 
-      <!-- Placeholder Animasi Ketika Kamera Belum Aktif -->
-      <div id="scanner-placeholder" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/90 z-10 pointer-events-none">
-        <div class="space-y-2 text-slate-500">
-          <i class="fa-solid fa-camera text-4xl animate-pulse text-purple-400/60"></i>
-          <p class="text-xs">Menyalakan Kamera Live...</p>
+      <!-- Tombol Aktifkan Kamera (Muncul saat kamera belum menyala) -->
+      <div id="scanner-placeholder" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/95 z-20 p-6 space-y-3">
+        <div class="w-16 h-16 bg-purple-600/20 text-purple-400 rounded-2xl flex items-center justify-center text-2xl border border-purple-500/30 shadow-lg">
+          <i class="fa-solid fa-camera"></i>
         </div>
+        <div>
+          <h3 class="font-bold text-sm text-white">Kamera Belum Aktif</h3>
+          <p class="text-[11px] text-slate-400 mt-0.5">Tekan tombol di bawah untuk meminta izin dan menyalakan kamera perangkat.</p>
+        </div>
+        <!-- Tombol Interaktif Asli untuk Mengaktifkan Kamera -->
+        <button type="button" onclick="window.initAndStartCamera()" class="bg-purple-600 hover:bg-purple-500 text-white font-bold py-2.5 px-5 rounded-xl text-xs shadow-lg shadow-purple-600/30 transition cursor-pointer flex items-center space-x-2">
+          <i class="fa-solid fa-power-off"></i>
+          <span>Aktifkan Kamera</span>
+        </button>
       </div>
 
       <!-- Bingkai Target Laser Animasi -->
-      <div class="absolute inset-8 border border-purple-500/30 rounded-2xl pointer-events-none flex items-center justify-center z-20">
+      <div class="absolute inset-8 border border-purple-500/30 rounded-2xl pointer-events-none flex items-center justify-center z-10">
         <div class="w-full h-0.5 bg-gradient-to-r from-transparent via-purple-500 to-transparent animate-bounce"></div>
       </div>
     </div>
@@ -154,10 +162,10 @@
   </div>
 </div>
 
-<!-- PUSTAKA HTML5 QR CODE / BARCODE SCANNER (LIVE CAMERA) -->
+<!-- PUSTAKA HTML5 QR CODE SCANNER -->
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
-<!-- SKRIP LOGIKA LIVE CAMERA SCANNER DAN DATABASE -->
+<!-- SKRIP KONTROL KAMERA DAN DATABASE -->
 <script>
   let scannedWargaData = null;
   let cachedNilaiJimpitan = "1.000";
@@ -180,11 +188,20 @@
   }
   fetchNilaiJimpitanConfig();
 
-  // Inisialisasi Kamera Live Scanner
-  async function startLiveScanner() {
+  // Fungsi yang dipanggil saat tombol "Aktifkan Kamera" diklik secara manual
+  window.initAndStartCamera = async function() {
     const placeholder = document.getElementById('scanner-placeholder');
     const readerEl = document.getElementById('reader');
     if (!readerEl) return;
+
+    if (placeholder) {
+      placeholder.innerHTML = `
+        <div class="space-y-2 text-purple-400 p-4 text-center">
+          <i class="fa-solid fa-spinner fa-spin text-3xl"></i>
+          <p class="text-xs">Meminta izin & menyalakan kamera...</p>
+        </div>
+      `;
+    }
 
     if (html5QrCodeScanner) {
       try {
@@ -207,25 +224,30 @@
           }
         },
         (errorMessage) => {
-          // Abaikan error frame kosong
+          // Abaikan frame scan error
         }
       );
 
+      // Jika berhasil menyala, sembunyikan placeholder
       if (placeholder) {
         placeholder.style.display = 'none';
       }
     } catch (err) {
-      console.error("Gagal menyalakan kamera live:", err);
+      console.error("Gagal menyalakan kamera:", err);
       if (placeholder) {
         placeholder.innerHTML = `
           <div class="space-y-2 text-rose-400 p-4 text-center">
             <i class="fa-solid fa-triangle-exclamation text-3xl"></i>
-            <p class="text-xs">Gagal menyalakan kamera otomatis. Gunakan tombol Cari No. KK / Pilih Manual di bawah.</p>
+            <p class="text-xs font-bold">Izin Kamera Ditolak / Gagal Diakses</p>
+            <p class="text-[10px]">Pastikan izin kamera di browser diaktifkan atau gunakan tombol Cari No. KK di bawah.</p>
+            <button type="button" onclick="window.initAndStartCamera()" class="mt-2 bg-slate-800 hover:bg-slate-700 text-white py-1.5 px-3 rounded-lg text-[10px] font-semibold border border-slate-700 cursor-pointer">
+              Coba Lagi
+            </button>
           </div>
         `;
       }
     }
-  }
+  };
 
   // Handle kode hasil scan / pencarian dengan Peringatan jika tidak terdaftar
   window.handleScannedCode = async function(codeText) {
@@ -569,9 +591,8 @@
     }
   };
 
-  // Jalankan kamera live saat halaman aktif
+  // Muat riwayat saat halaman aktif
   setTimeout(() => {
-    startLiveScanner();
     window.loadScanHistory();
-  }, 400);
+  }, 300);
 </script>
