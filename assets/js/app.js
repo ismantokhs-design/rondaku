@@ -2166,7 +2166,7 @@ window.initHomeRealTimeClock = function() {
 };
 
 // ==========================================
-// 21. FUNGSI KAMERA QR SCANNER (HTML5 QRCODE)
+// 21. FUNGSI KAMERA QR SCANNER (LANGSUNG AKTIF TANPA BLOKIR)
 // ==========================================
 let html5QrCodeScanner = null;
 
@@ -2190,24 +2190,27 @@ window.openScannerModal = async function() {
       if (!html5QrCodeScanner) {
         html5QrCodeScanner = new Html5Qrcode("reader");
       }
-      if (!html5QrCodeScanner.isScanning) {
-        await html5QrCodeScanner.start(
-          { facingMode: "environment" },
-          { fps: 10, qrbox: { width: 220, height: 220 } },
-          (decodedText) => {
-            window.closeScannerModal();
-            window.handleQRCodeScanned(decodedText);
-          },
-          (err) => {}
-        );
+      
+      if (html5QrCodeScanner.isScanning) {
+        await html5QrCodeScanner.stop();
       }
+
+      await html5QrCodeScanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 220, height: 220 } },
+        (decodedText) => {
+          window.closeScannerModal();
+          window.handleQRCodeScanned(decodedText);
+        },
+        (err) => {}
+      );
     } catch (err) {
       console.error("Gagal membuka kamera:", err);
       if (typeof window.showToast === 'function') {
-        window.showToast("Gagal membuka kamera perangkat. Pastikan izin kamera aktif.", "error");
+        window.showToast("Gagal membuka kamera perangkat.", "error");
       }
     }
-  }, 300);
+  }, 350);
 };
 
 window.closeScannerModal = async function() {
