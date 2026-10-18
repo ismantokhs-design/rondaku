@@ -1,0 +1,226 @@
+<div class="space-y-5 pb-24">
+  <!-- Greeting Banner -->
+  <div>
+    <h1 id="greeting-text" class="text-xl font-bold text-white">Selamat sore, Petugas Ronda</h1>
+    <p class="text-sm text-slate-400 mt-0.5"><span id="date-text">Minggu Wage, 18 Oktober 2026</span> &bull; <span id="time-text" class="text-emerald-400 font-medium">13:05 WIB</span></p>
+  </div>
+
+  <!-- Header Card Laporan -->
+  <div class="bg-gradient-to-r from-purple-600 to-indigo-600 p-5 rounded-3xl shadow-lg shadow-purple-500/20 text-white relative overflow-hidden flex items-center justify-between">
+    <div>
+      <div class="flex items-center space-x-2 bg-white/20 w-fit px-3 py-1 rounded-full text-xs font-semibold mb-2 backdrop-blur-sm">
+        <i class="fa-solid fa-file-lines"></i>
+        <span>Pusat Laporan &amp; Kejadian</span>
+      </div>
+      <h2 class="text-lg font-bold">Rekapitulasi Laporan Warga</h2>
+      <p class="text-xs text-white/80 mt-1">Catatan patroli dan laporan kejadian penting RT 04</p>
+    </div>
+    <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-2xl backdrop-blur-sm">
+      <i class="fa-solid fa-clipboard-user"></i>
+    </div>
+  </div>
+
+  <!-- Tombol Aksi Buat Laporan Baru -->
+  <button type="button" onclick="window.openLaporanModal()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg shadow-emerald-500/20 transition transform active:scale-95 flex items-center justify-center space-x-2 cursor-pointer">
+    <i class="fa-solid fa-circle-plus text-base"></i>
+    <span class="text-sm">Buat Laporan / Catat Kejadian Baru</span>
+  </button>
+
+  <!-- Statistik Ringkas Laporan -->
+  <div class="grid grid-cols-3 gap-3 bg-slate-800/60 border border-slate-800 p-4 rounded-2xl text-center">
+    <div>
+      <p class="text-xs text-slate-400">Total Laporan</p>
+      <p id="stat-total" class="font-bold text-base text-white mt-0.5">0</p>
+    </div>
+    <div class="border-x border-slate-700/50">
+      <p class="text-xs text-slate-400">Aman / Nihil</p>
+      <p id="stat-aman" class="font-bold text-base text-emerald-400 mt-0.5">0</p>
+    </div>
+    <div>
+      <p class="text-xs text-slate-400">Kejadian</p>
+      <p id="stat-kejadian" class="font-bold text-base text-amber-400 mt-0.5">0</p>
+    </div>
+  </div>
+
+  <!-- Daftar Riwayat Laporan -->
+  <div class="space-y-3">
+    <div class="flex items-center justify-between">
+      <h3 class="font-bold text-sm text-white">Riwayat Laporan &amp; Patroli (<span id="active-pasaran-label" class="text-purple-400">Semua Pasaran</span>)</h3>
+      <button onclick="window.loadLaporanFromFirestore()" class="text-xs text-purple-400 hover:text-purple-300 transition flex items-center space-x-1 cursor-pointer">
+        <i class="fa-solid fa-rotate text-[10px]"></i>
+        <span>Muat Ulang</span>
+      </button>
+    </div>
+
+    <!-- Container Daftar Laporan -->
+    <div id="laporan-list-container" class="space-y-3">
+      <div class="bg-slate-800/60 border border-slate-800 p-6 rounded-2xl text-center">
+        <p class="text-xs text-slate-400">Memuat riwayat laporan dari database...</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- POP-UP MODAL INPUT LAPORAN BARU -->
+<div id="local-laporan-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+  <div id="local-laporan-card" class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl transform translate-y-full sm:translate-y-0 sm:scale-95 transition-transform duration-300 space-y-4 max-h-[90vh] overflow-y-auto">
+    
+    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+      <div class="flex items-center space-x-2.5 text-emerald-400">
+        <i class="fa-solid fa-file-circle-plus text-lg"></i>
+        <h3 class="font-bold text-sm text-white">Formulir Laporan &amp; Kejadian</h3>
+      </div>
+      <button type="button" onclick="window.closeLaporanModal()" class="text-slate-400 hover:text-white p-1 cursor-pointer">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+    </div>
+
+    <div class="space-y-3.5">
+      <div>
+        <label class="block text-xs font-medium text-slate-400 mb-1">Jenis Laporan</label>
+        <select id="laporan-jenis" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 transition cursor-pointer">
+          <option>Patroli Rutin Aman / Nihil</option>
+          <option>Kejadian / Hal Mencurigakan</option>
+          <option>Tamu / Pendatang Asing</option>
+          <option>Kerusakan Fasilitas / Lampu Jalan</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium text-slate-400 mb-1">Nama Pelapor / Petugas</label>
+        <input type="text" id="laporan-pelapor" placeholder="Contoh: Ismanto (Komandan Regu)" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 transition">
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium text-slate-400 mb-1">Detail Keterangan / Laporan</label>
+        <textarea id="laporan-keterangan" rows="4" placeholder="Tuliskan detail patroli atau kronologi kejadian..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 transition"></textarea>
+      </div>
+
+      <div class="pt-2">
+        <button type="button" onclick="window.submitLaporanRonda()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-semibold py-3 rounded-xl text-sm shadow-lg shadow-emerald-500/20 transition transform active:scale-95 cursor-pointer">
+          Kirim Laporan ke Database
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- POP-UP MODAL EDIT LAPORAN -->
+<div id="local-edit-laporan-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+  <div id="local-edit-laporan-card" class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl transform translate-y-full sm:translate-y-0 sm:scale-95 transition-transform duration-300 space-y-4 max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+      <div class="flex items-center space-x-2.5 text-amber-400">
+        <i class="fa-solid fa-file-pen text-lg"></i>
+        <h3 class="font-bold text-sm text-white">Edit Laporan &amp; Kejadian</h3>
+      </div>
+      <button type="button" onclick="window.closeEditLaporanModal()" class="text-slate-400 hover:text-white p-1 cursor-pointer">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+    </div>
+    <div class="space-y-3.5">
+      <input type="hidden" id="edit-laporan-id">
+      <div>
+        <label class="block text-xs font-medium text-slate-400 mb-1">Jenis Laporan</label>
+        <select id="edit-laporan-jenis" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition cursor-pointer">
+          <option>Patroli Rutin Aman / Nihil</option>
+          <option>Kejadian / Hal Mencurigakan</option>
+          <option>Tamu / Pendatang Asing</option>
+          <option>Kerusakan Fasilitas / Lampu Jalan</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-slate-400 mb-1">Nama Pelapor / Petugas</label>
+        <input type="text" id="edit-laporan-pelapor" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition">
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-slate-400 mb-1">Detail Keterangan / Laporan</label>
+        <textarea id="edit-laporan-keterangan" rows="4" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition"></textarea>
+      </div>
+      <div class="pt-2">
+        <button type="button" onclick="window.submitUpdateLaporan()" class="w-full bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-amber-500 hover:to-yellow-400 text-white font-semibold py-3 rounded-xl text-sm shadow-lg shadow-amber-600/30 transition transform active:scale-95 cursor-pointer">
+          Simpan Perubahan Laporan
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCRIPT CLOCK, PASARAN, & LOGIKA LAPORAN -->
+<script>
+  (function() {
+    const now = new Date();
+    function getJawaPasaranLocal(date) {
+      const pasaranList = ['Pon', 'Wage', 'Kliwon', 'Legi', 'Pahing'];
+      const acuan = new Date(2000, 0, 1);
+      const selisihHari = Math.floor((date - acuan) / (1000 * 60 * 60 * 24));
+      let indexPasaran = (selisihHari % 5);
+      if (indexPasaran < 0) indexPasaran += 5;
+      return pasaranList[indexPasaran];
+    }
+
+    const currentPasaran = getJawaPasaranLocal(now);
+    const optionsDate = { day: 'numeric', month: 'long', year: 'numeric' };
+    const restDate = now.toLocaleDateString('id-ID', optionsDate);
+    const dayName = now.toLocaleDateString('id-ID', { weekday: 'long' });
+    const finalDateStr = `${dayName} ${currentPasaran}, ${restDate}`;
+    
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const formattedTime = `${hours}:${minutes} WIB`;
+    
+    const hourNum = now.getHours();
+    let greeting = "Selamat malam";
+    if (hourNum >= 3 && hourNum < 11) greeting = "Selamat pagi";
+    else if (hourNum >= 11 && hourNum < 15) greeting = "Selamat siang";
+    else if (hourNum >= 15 && hourNum < 18) greeting = "Selamat sore";
+
+    const gEl = document.getElementById('greeting-text');
+    const dEl = document.getElementById('date-text');
+    const tEl = document.getElementById('time-text');
+    const pasaranLabel = document.getElementById('active-pasaran-label');
+
+    if(gEl) gEl.innerText = `${greeting}, Petugas Ronda`;
+    if(dEl) dEl.innerText = finalDateStr;
+    if(tEl) tEl.innerText = formattedTime;
+    if(pasaranLabel) pasaranLabel.innerText = `Pasaran ${currentPasaran}`;
+
+    // Simpan pasaran hari ini di global agar fungsi load bisa mengaksesnya
+    window.currentActivePasaran = currentPasaran;
+
+    if (typeof window.loadLaporanFromFirestore === 'function') {
+      window.loadLaporanFromFirestore();
+    }
+  })();
+
+  // Fungsi Tambahan untuk Edit & Hapus Laporan di app.js / script utama
+  window.openEditLaporanModal = function(docId, jenis, pelapor, keterangan) {
+    document.getElementById('edit-laporan-id').value = docId;
+    document.getElementById('edit-laporan-jenis').value = jenis;
+    document.getElementById('edit-laporan-pelapor').value = pelapor;
+    document.getElementById('edit-laporan-keterangan').value = keterangan;
+
+    const modal = document.getElementById('local-edit-laporan-modal');
+    const card = document.getElementById('local-edit-laporan-card');
+    if (modal) {
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        if (card) {
+          card.classList.remove('translate-y-full', 'sm:scale-95');
+          card.classList.add('translate-y-0', 'sm:scale-100');
+        }
+      }, 10);
+    }
+  };
+
+  window.closeEditLaporanModal = function() {
+    const modal = document.getElementById('local-edit-laporan-modal');
+    const card = document.getElementById('local-edit-laporan-card');
+    if (modal && card) {
+      modal.classList.add('opacity-0');
+      card.classList.remove('translate-y-0', 'sm:scale-100');
+      card.classList.add('translate-y-full', 'sm:scale-95');
+      setTimeout(() => modal.classList.add('hidden'), 300);
+    }
+  };
+</script>

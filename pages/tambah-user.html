@@ -1,0 +1,398 @@
+<div class="space-y-6 pb-12">
+  <!-- Header Banner -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-xl font-bold text-white">Manajemen Pengguna</h1>
+      <p class="text-xs text-slate-400 mt-0.5">Kelola daftar petugas ronda dan hak akses sistem</p>
+    </div>
+    <button onclick="loadPage('home')" class="w-10 h-10 bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-300 rounded-2xl flex items-center justify-center transition shadow-md cursor-pointer" title="Kembali ke Beranda">
+      <i class="fa-solid fa-arrow-left text-sm"></i>
+    </button>
+  </div>
+
+  <!-- HEADER BANNER CARD -->
+  <div class="bg-gradient-to-r from-emerald-600 to-teal-600 p-5 rounded-3xl shadow-lg shadow-emerald-500/20 text-white relative overflow-hidden flex items-center justify-between">
+    <div>
+      <div class="flex items-center space-x-2 bg-white/20 w-fit px-3 py-1 rounded-full text-xs font-semibold mb-2 backdrop-blur-sm">
+        <i class="fa-solid fa-users-gear"></i>
+        <span>Pengaturan Akun</span>
+      </div>
+      <h2 class="text-lg font-bold">Daftar Petugas Ronda</h2>
+      <p class="text-xs text-white/80 mt-1">Terhubung langsung dengan Firebase Firestore</p>
+    </div>
+    <button type="button" onclick="openLocalTambahModal()" class="bg-white text-emerald-800 hover:bg-emerald-50 text-xs font-bold px-4 py-3 rounded-2xl shadow-lg transition transform active:scale-95 cursor-pointer flex items-center space-x-2 shrink-0">
+      <i class="fa-solid fa-user-plus text-sm"></i>
+      <span>Tambah Petugas</span>
+    </button>
+  </div>
+
+  <!-- TABEL INFORMASI USER TERDAFTAR -->
+  <div class="bg-slate-800/60 border border-slate-800 p-5 rounded-3xl space-y-4">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center space-x-2.5 text-emerald-400">
+        <i class="fa-solid fa-list-ul text-base"></i>
+        <h3 class="font-bold text-sm text-white">Daftar Pengguna Aktif di Firestore</h3>
+      </div>
+      <button type="button" onclick="loadUsersFromFirestore()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs px-3.5 py-2 rounded-xl transition flex items-center space-x-1.5 cursor-pointer">
+        <i class="fa-solid fa-rotate text-xs"></i>
+        <span>Muat Ulang</span>
+      </button>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="border-b border-slate-700/60 text-[11px] text-slate-400 uppercase tracking-wider">
+            <th class="py-2.5 px-3">Petugas</th>
+            <th class="py-2.5 px-3">Peran / Pos / Pasaran</th>
+            <th class="py-2.5 px-3 text-center">Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="user-table-body" class="divide-y divide-slate-700/40 text-xs text-slate-200">
+          <tr>
+            <td colspan="3" class="py-4 text-center text-slate-400">Memuat data dari database...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- MODAL TAMBAH PETUGAS -->
+  <div id="local-tambah-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+    <div id="local-tambah-card" class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl transform translate-y-full sm:translate-y-0 sm:scale-95 transition-transform duration-300 space-y-4 max-h-[90vh] overflow-y-auto">
+      
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center space-x-2.5 text-emerald-400">
+          <i class="fa-solid fa-user-plus text-lg"></i>
+          <h3 class="font-bold text-sm text-white">Formulir Tambah Petugas Baru</h3>
+        </div>
+        <button type="button" onclick="closeLocalTambahModal()" class="text-slate-400 hover:text-white p-1 cursor-pointer">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3.5">
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-xs font-medium text-slate-400">Nama Lengkap Petugas</label>
+            <!-- Tombol Ambil Nama dari Database Jadwal -->
+            <button type="button" onclick="window.openDbNameSelectorModal()" class="text-[11px] bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 font-semibold px-2.5 py-0.5 rounded-lg transition flex items-center space-x-1 cursor-pointer">
+              <i class="fa-solid fa-database text-[10px]"></i>
+              <span>Ambil dari DB</span>
+            </button>
+          </div>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500"><i class="fa-solid fa-user text-xs"></i></span>
+            <input type="text" id="new-nama" placeholder="Contoh: Joko Widodo" class="user-form-input w-full bg-slate-800 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 transition">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Alamat Email (Untuk Login)</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500"><i class="fa-solid fa-envelope text-xs"></i></span>
+            <input type="email" id="new-email" placeholder="joko@ronda.local" class="user-form-input w-full bg-slate-800 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 transition">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Password Sementara</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500"><i class="fa-solid fa-key text-xs"></i></span>
+            <input type="password" id="new-password" placeholder="••••••••" class="user-form-input w-full bg-slate-800 border border-slate-700 rounded-xl pl-10 pr-10 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 transition">
+            <button type="button" onclick="toggleLocalPasswordVisibility()" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-emerald-400 transition cursor-pointer">
+              <i id="local-eye-icon" class="fa-solid fa-eye text-xs"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Kolom Pasaran Ronda Jaga -->
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Pasaran Ronda Jaga</label>
+          <select id="new-pasaran" class="user-form-input w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 transition cursor-pointer">
+            <option value="" disabled selected>-- Pilih Pasaran --</option>
+            <option value="Legi">Legi</option>
+            <option value="Pahing">Pahing</option>
+            <option value="Pon">Pon</option>
+            <option value="Wage">Wage</option>
+            <option value="Kliwon">Kliwon</option>
+            <option value="Umum / Harian">Umum / Harian</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Peran / Jabatan Akses</label>
+          <select id="new-role" class="user-form-input w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 transition">
+            <option value="Petugas Ronda">Petugas Ronda Jaga</option>
+            <option value="Koordinator RT">Koordinator / Ketua RT</option>
+            <option value="Admin Sistem">Admin Sistem Keamanan</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Penugasan Pos / Wilayah</label>
+          <select id="new-pos" class="user-form-input w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 transition">
+            <option>Pos Utama RT 04</option>
+            <option>Pos 1 (Sisi Barat)</option>
+            <option>Pos 2 (Sisi Timur)</option>
+            <option>Pos 3 (Area Lorong Selatan)</option>
+            <option>Pos 4 (Perbatasan Potrobayan)</option>
+          </select>
+        </div>
+
+        <div class="pt-2">
+          <button type="button" id="btn-submit-user" onclick="submitTambahUser()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-semibold py-3 rounded-xl text-sm shadow-lg shadow-emerald-600/30 transition transform active:scale-95 cursor-pointer">
+            Simpan &amp; Daftarkan Pengguna
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL PILIH NAMA DARI DATABASE JADWAL -->
+  <div id="local-db-names-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+    <div id="local-db-names-card" class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-6 shadow-2xl transform scale-95 transition-transform duration-300 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center space-x-2 text-emerald-400">
+          <i class="fa-solid fa-address-book text-base"></i>
+          <h3 class="font-bold text-sm text-white">Pilih Nama dari Database Jadwal</h3>
+        </div>
+        <button type="button" onclick="window.closeDbNameSelectorModal()" class="text-slate-400 hover:text-white p-1 cursor-pointer">
+          <i class="fa-solid fa-xmark text-base"></i>
+        </button>
+      </div>
+
+      <div id="db-names-list-container" class="space-y-2 max-h-60 overflow-y-auto pr-1">
+        <p class="text-xs text-slate-400 text-center py-4">Memuat daftar nama dari jadwal...</p>
+      </div>
+
+      <div class="pt-2">
+        <button type="button" onclick="window.closeDbNameSelectorModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-2.5 rounded-xl text-xs transition cursor-pointer">
+          Tutup
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL EDIT PETUGAS -->
+  <div id="local-edit-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+    <div id="local-edit-card" class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl transform translate-y-full sm:translate-y-0 sm:scale-95 transition-transform duration-300 space-y-4 max-h-[90vh] overflow-y-auto">
+      
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center space-x-2.5 text-amber-400">
+          <i class="fa-solid fa-user-pen text-lg"></i>
+          <h3 class="font-bold text-sm text-white">Edit Data Petugas</h3>
+        </div>
+        <button type="button" onclick="closeLocalEditModal()" class="text-slate-400 hover:text-white p-1 cursor-pointer">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3.5">
+        <input type="hidden" id="edit-doc-id">
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Nama Lengkap Petugas</label>
+          <input type="text" id="edit-nama" class="user-edit-input w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Alamat Email</label>
+          <input type="email" id="edit-email" class="user-edit-input w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition">
+        </div>
+        <!-- Kolom Pasaran Edit -->
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Pasaran Ronda Jaga</label>
+          <select id="edit-pasaran" class="user-edit-input w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition cursor-pointer">
+            <option value="" disabled selected>-- Pilih Pasaran --</option>
+            <option value="Legi">Legi</option>
+            <option value="Pahing">Pahing</option>
+            <option value="Pon">Pon</option>
+            <option value="Wage">Wage</option>
+            <option value="Kliwon">Kliwon</option>
+            <option value="Umum / Harian">Umum / Harian</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Peran / Jabatan Akses</label>
+          <select id="edit-role" class="user-edit-input w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition">
+            <option value="Petugas Ronda">Petugas Ronda Jaga</option>
+            <option value="Koordinator RT">Koordinator / Ketua RT</option>
+            <option value="Admin Sistem">Admin Sistem Keamanan</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Penugasan Pos / Wilayah</label>
+          <select id="edit-pos" class="user-edit-input w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition">
+            <option>Pos Utama RT 04</option>
+            <option>Pos 1 (Sisi Barat)</option>
+            <option>Pos 2 (Sisi Timur)</option>
+            <option>Pos 3 (Area Lorong Selatan)</option>
+            <option>Pos 4 (Perbatasan Potrobayan)</option>
+          </select>
+        </div>
+        <div class="pt-2">
+          <button type="button" onclick="submitUpdateUser()" class="w-full bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-amber-500 hover:to-yellow-400 text-white font-semibold py-3 rounded-xl text-sm shadow-lg shadow-amber-600/30 transition transform active:scale-95 cursor-pointer">
+            Simpan Perubahan
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL KONFIRMASI HAPUS KUSTOM -->
+  <div id="local-delete-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+    <div id="local-delete-card" class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-6 shadow-2xl transform scale-95 transition-transform duration-300 space-y-4 text-center">
+      <div class="w-14 h-14 bg-rose-500/20 text-rose-500 rounded-2xl flex items-center justify-center mx-auto text-2xl">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <div>
+        <h3 class="font-bold text-base text-white">Hapus Data Petugas?</h3>
+        <p id="delete-modal-text" class="text-xs text-slate-400 mt-1">Tindakan ini tidak dapat dibatalkan dari database.</p>
+      </div>
+      <div class="grid grid-cols-2 gap-3 pt-2">
+        <button type="button" onclick="closeDeleteModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-2.5 rounded-xl text-xs transition cursor-pointer">
+          Batal
+        </button>
+        <button type="button" id="btn-confirm-delete" class="bg-rose-600 hover:bg-rose-500 text-white font-semibold py-2.5 rounded-xl text-xs shadow-lg shadow-rose-600/30 transition cursor-pointer">
+          Ya, Hapus
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Script Navigasi Enter & Fitur Ambil Nama dari DB -->
+  <script>
+    function setupEnterNavigation(selector) {
+      document.querySelectorAll(selector).forEach((element, index, inputs) => {
+        element.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            if (inputs[index + 1]) {
+              inputs[index + 1].focus();
+            } else {
+              if (selector.includes('user-form-input') && typeof submitTambahUser === 'function') {
+                submitTambahUser();
+              } else if (selector.includes('user-edit-input') && typeof submitUpdateUser === 'function') {
+                submitUpdateUser();
+              }
+            }
+          }
+        });
+      });
+    }
+    setupEnterNavigation('.user-form-input');
+    setupEnterNavigation('.user-edit-input');
+
+    // Fungsi Membuka Modal Pilih Nama dari DB Jadwal beserta Pasaran
+    window.openDbNameSelectorModal = async function() {
+      const modal = document.getElementById('local-db-names-modal');
+      const card = document.getElementById('local-db-names-card');
+      const container = document.getElementById('db-names-list-container');
+
+      if (!modal) return;
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        if (card) {
+          card.classList.remove('scale-95');
+          card.classList.add('scale-100');
+        }
+      }, 10);
+
+      container.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">Mengambil data nama dari database jadwal...</p>`;
+
+      try {
+        const { db } = await import('./db.js');
+        const { collection, getDocs } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+        
+        const querySnapshot = await getDocs(collection(db, "schedules"));
+        if (querySnapshot.empty) {
+          container.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">Belum ada data jadwal di database.</p>`;
+          return;
+        }
+
+        let petugasMap = new Map();
+        querySnapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          const pasaranJadwal = data.pasaran || 'Umum / Harian';
+
+          let namesList = [];
+          if (Array.isArray(data.petugasList) && data.petugasList.length > 0) {
+            namesList = data.petugasList;
+          } else if (typeof data.petugas === 'string') {
+            namesList = data.petugas.split(/,|\n/);
+          }
+
+          namesList.forEach(name => {
+            const cleanName = name.trim();
+            if (cleanName) {
+              petugasMap.set(cleanName, pasaranJadwal);
+            }
+          });
+        });
+
+        if (petugasMap.size === 0) {
+          container.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">Tidak ditemukan nama petugas dalam jadwal.</p>`;
+          return;
+        }
+
+        let html = '';
+        const sortedEntries = Array.from(petugasMap.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+
+        sortedEntries.forEach(([nama, pasaran]) => {
+          const safeName = nama.replace(/'/g, "\\'");
+          const safePasaran = pasaran.replace(/'/g, "\\'");
+          html += `
+            <button type="button" onclick="window.selectNameFromDb('${safeName}', '${safePasaran}')" class="w-full text-left bg-slate-800/80 hover:bg-emerald-600/20 hover:border-emerald-500/50 border border-slate-700/60 p-2.5 rounded-xl text-xs text-white font-medium transition flex items-center justify-between cursor-pointer group">
+              <div>
+                <span class="font-bold">${nama}</span>
+                <span class="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded ml-2">${pasaran}</span>
+              </div>
+              <i class="fa-solid fa-plus text-[10px] text-slate-400 group-hover:text-emerald-400"></i>
+            </button>
+          `;
+        });
+
+        container.innerHTML = html;
+
+      } catch (err) {
+        console.error("Gagal memuat nama dari DB:", err);
+        container.innerHTML = `<p class="text-xs text-rose-400 text-center py-4">Gagal mengambil data dari database: ${err.message}</p>`;
+      }
+    };
+
+    window.closeDbNameSelectorModal = function() {
+      const modal = document.getElementById('local-db-names-modal');
+      const card = document.getElementById('local-db-names-card');
+      if (modal && card) {
+        modal.classList.add('opacity-0');
+        card.classList.remove('scale-100');
+        card.classList.add('scale-95');
+        setTimeout(() => {
+          modal.classList.add('hidden');
+        }, 300);
+      }
+    };
+
+    window.selectNameFromDb = function(nama, pasaran) {
+      const inputNama = document.getElementById('new-nama');
+      const inputEmail = document.getElementById('new-email');
+      const selectPasaran = document.getElementById('new-pasaran');
+      
+      if (inputNama) inputNama.value = nama;
+      
+      if (inputEmail) {
+        const cleanEmail = nama.toLowerCase().replace(/[^a-z0-9]/g, '');
+        inputEmail.value = `${cleanEmail}@ronda.local`;
+      }
+
+      if (selectPasaran && pasaran) {
+        selectPasaran.value = pasaran;
+      }
+
+      window.closeDbNameSelectorModal();
+      if (typeof window.showToast === 'function') {
+        window.showToast(`Berhasil memilih "${nama}" (${pasaran}) dari database.`);
+      }
+    };
+  </script>
+</div>

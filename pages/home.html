@@ -1,0 +1,141 @@
+<div class="space-y-5 pb-24">
+  <!-- Greeting Banner -->
+  <div>
+    <h1 id="greeting-text" class="text-xl font-bold text-white">Memuat...</h1>
+    <p class="text-sm text-slate-400 mt-0.5"><span id="date-text">Memuat tanggal...</span> &bull; <span id="time-text" class="text-emerald-400 font-medium">00:00 WIB</span></p>
+  </div>
+
+  <!-- Status Box (Sesi Berlangsung) -->
+  <div class="bg-gradient-to-r from-emerald-600 to-teal-500 p-5 rounded-3xl shadow-lg shadow-emerald-500/20 text-white relative overflow-hidden flex items-center justify-between">
+    <div>
+      <div class="flex items-center space-x-2 bg-white/20 w-fit px-3 py-1 rounded-full text-xs font-semibold mb-2">
+        <i class="fa-solid fa-circle-check text-white"></i>
+        <span>Sedang Berlangsung</span>
+      </div>
+      <h2 class="text-lg font-bold">Sesi Ronda Warga</h2>
+      <p class="text-xs text-white/80 mt-1">RT 04 &bull; Pedukuhan Potrobayan</p>
+    </div>
+    <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-2xl backdrop-blur-sm">
+      <i class="fa-solid fa-shield"></i>
+    </div>
+  </div>
+
+  <!-- REKAPITULASI JIMBITAN & WARGA -->
+  <div class="bg-slate-800/50 border border-slate-800 p-5 rounded-3xl space-y-4">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center space-x-2.5 text-emerald-400">
+        <i class="fa-solid fa-wallet text-base"></i>
+        <h3 class="font-bold text-sm text-white">Rekapitulasi Jimpitan Hari Ini</h3>
+      </div>
+      <span id="jimpitan-nominal-badge" class="text-[10px] bg-emerald-500/20 text-emerald-300 px-2.5 py-1 rounded-full font-bold">Tarif: Rp 1.000</span>
+    </div>
+
+    <!-- Kotak Utama Total Jimpitan -->
+    <div class="bg-gradient-to-br from-slate-900 to-slate-900/80 border border-slate-700/60 p-4 rounded-2xl flex items-center justify-between">
+      <div>
+        <p class="text-[11px] text-slate-400 font-medium">Total Nominal Terkumpul</p>
+        <h4 id="stat-total-nominal" class="text-xl font-extrabold text-emerald-400 mt-0.5">Rp 0</h4>
+      </div>
+      <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 text-lg">
+        <i class="fa-solid fa-rupiah-sign"></i>
+      </div>
+    </div>
+
+    <!-- Grid Detail Status Warga Discan -->
+    <div class="grid grid-cols-3 gap-2.5 text-center">
+      <div class="bg-slate-900/60 border border-slate-700/40 p-3 rounded-2xl">
+        <p class="text-[10px] text-slate-400">Sudah Discan</p>
+        <p id="stat-scanned-count" class="font-bold text-sm text-white mt-1">0 / 0</p>
+      </div>
+      <div class="bg-slate-900/60 border border-emerald-500/30 p-3 rounded-2xl">
+        <p class="text-[10px] text-emerald-400">Pasang</p>
+        <p id="stat-pasang-count" class="font-bold text-sm text-emerald-300 mt-1">0</p>
+      </div>
+      <div class="bg-slate-900/60 border border-rose-500/30 p-3 rounded-2xl">
+        <p class="text-[10px] text-rose-400">Tidak Pasang</p>
+        <p id="stat-tidak-pasang-count" class="font-bold text-sm text-rose-300 mt-1">0</p>
+      </div>
+    </div>
+
+    <!-- Progress Bar Partisipasi Warga -->
+    <div class="space-y-1.5 pt-1">
+      <div class="flex justify-between text-[11px]">
+        <span class="text-slate-400">Progres Pendataan Warga</span>
+        <span id="stat-progress-text" class="text-purple-300 font-bold">0%</span>
+      </div>
+      <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-700/50">
+        <div id="stat-progress-bar" class="h-full bg-gradient-to-r from-purple-500 to-emerald-500 transition-all duration-500" style="width: 0%"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INFORMASI PERATURAN RONDA (READ-ONLY DARI DATABASE) -->
+  <div class="bg-slate-800/50 border border-slate-800 p-5 rounded-3xl space-y-3">
+    <div class="flex items-center space-x-2.5 text-purple-400">
+      <i class="fa-solid fa-book-bookmark text-base"></i>
+      <h3 class="font-bold text-sm text-white">Peraturan &amp; Tata Tertib Ronda</h3>
+    </div>
+    
+    <div id="home-peraturan-container" class="space-y-2 bg-slate-900/60 p-4 rounded-2xl border border-slate-800/80">
+      <p class="text-xs text-slate-400 text-center py-2">Memuat peraturan dari database...</p>
+    </div>
+  </div>
+</div>
+
+<!-- SCRIPT REAL-TIME JAM, UCAPAN & REKAP JIMBITAN -->
+<script>
+  (function() {
+    if (typeof window.loadPeraturanToHome === 'function') {
+      window.loadPeraturanToHome();
+    }
+
+    if (typeof window.loadHomeJimpitanSummary === 'function') {
+      window.loadHomeJimpitanSummary();
+    }
+
+    function updateRealTimeClock() {
+      const now = new Date();
+      
+      const optionsDate = { day: 'numeric', month: 'long', year: 'numeric' };
+      const restDate = now.toLocaleDateString('id-ID', optionsDate);
+      const dayName = now.toLocaleDateString('id-ID', { weekday: 'long' });
+      
+      function getJawaPasaranLocal(date) {
+        const pasaranList = ['Pon', 'Wage', 'Kliwon', 'Legi', 'Pahing'];
+        const acuan = new Date(2000, 0, 1);
+        const selisihHari = Math.floor((date - acuan) / (1000 * 60 * 60 * 24));
+        let indexPasaran = (selisihHari % 5);
+        if (indexPasaran < 0) indexPasaran += 5;
+        return pasaranList[indexPasaran];
+      }
+
+      const finalDateStr = `${dayName} ${getJawaPasaranLocal(now)}, ${restDate}`;
+      
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const formattedTime = `${hours}:${minutes} WIB`;
+      
+      const hourNum = now.getHours();
+      let greeting = "Selamat malam";
+      if (hourNum >= 3 && hourNum < 11) {
+        greeting = "Selamat pagi";
+      } else if (hourNum >= 11 && hourNum < 15) {
+        greeting = "Selamat siang";
+      } else if (hourNum >= 15 && hourNum < 18) {
+        greeting = "Selamat sore";
+      }
+
+      const gEl = document.getElementById('greeting-text');
+      const dEl = document.getElementById('date-text');
+      const tEl = document.getElementById('time-text');
+
+      if (gEl) gEl.innerText = `${greeting}, Petugas Ronda`;
+      if (dEl) dEl.innerText = finalDateStr;
+      if (tEl) tEl.innerText = formattedTime;
+    }
+
+    updateRealTimeClock();
+    if (window._homeClockInterval) clearInterval(window._homeClockInterval);
+    window._homeClockInterval = setInterval(updateRealTimeClock, 1000);
+  })();
+</script>

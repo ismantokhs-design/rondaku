@@ -1,0 +1,578 @@
+<div class="space-y-5 pb-24">
+  <!-- Greeting & Tombol Kembali -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-xl font-bold text-white">Scan QR Pos / Rumah Warga</h1>
+      <p class="text-sm text-slate-400 mt-0.5">Arahkan kamera ke QR Code (Pos Ronda / Rumah Warga)</p>
+    </div>
+    <button onclick="loadPage('home')" class="w-10 h-10 bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-300 rounded-2xl flex items-center justify-center transition shadow-md cursor-pointer shrink-0 ml-3" title="Kembali ke Beranda">
+      <i class="fa-solid fa-arrow-left text-sm"></i>
+    </button>
+  </div>
+
+  <!-- Scanner Viewfinder Box -->
+  <div class="bg-slate-800/60 border border-slate-800 p-5 rounded-3xl space-y-4 text-center">
+    <div class="relative w-full aspect-square max-w-sm mx-auto bg-slate-900 border-2 border-dashed border-purple-500/60 rounded-3xl overflow-hidden flex flex-col items-center justify-center shadow-inner">
+      
+      <!-- Area Render Kamera -->
+      <div id="reader" class="absolute inset-0 w-full h-full object-cover"></div>
+
+      <!-- Placeholder Animasi Ketika Kamera Belum Aktif -->
+      <div id="scanner-placeholder" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/90 z-10 pointer-events-none">
+        <div class="space-y-2 text-slate-500">
+          <i class="fa-solid fa-camera text-4xl animate-pulse text-purple-400/60"></i>
+          <p class="text-xs">Menyalakan Kamera...</p>
+        </div>
+      </div>
+
+      <!-- Bingkai Target Laser Animasi -->
+      <div class="absolute inset-8 border border-purple-500/30 rounded-2xl pointer-events-none flex items-center justify-center z-20">
+        <div class="w-full h-0.5 bg-gradient-to-r from-transparent via-purple-500 to-transparent animate-bounce"></div>
+      </div>
+    </div>
+
+    <p class="text-xs text-slate-400 px-4">
+      Pindai QR Code nomor KK rumah warga atau pos kamling untuk mencatat kehadiran dan jimpitan.
+    </p>
+
+    <!-- Tombol Alternatif / Input Manual -->
+    <div class="flex items-center justify-center space-x-3 pt-2">
+      <button onclick="window.toggleFlashlight()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold px-4 py-2.5 rounded-xl border border-slate-700 transition flex items-center space-x-2 cursor-pointer">
+        <i class="fa-solid fa-bolt text-amber-400"></i>
+        <span>Senter / Flash</span>
+      </button>
+      <button onclick="window.openManualScanModal()" class="bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 text-xs font-semibold px-4 py-2.5 rounded-xl border border-purple-500/30 transition flex items-center space-x-2 cursor-pointer">
+        <i class="fa-solid fa-keyboard"></i>
+        <span>Cari No. KK / Manual</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Riwayat Scan Terakhir Hari Ini -->
+  <div class="bg-slate-800/60 border border-slate-800 p-5 rounded-3xl space-y-3">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center space-x-2.5 text-purple-400">
+        <i class="fa-solid fa-clock-rotate-left text-base"></i>
+        <h3 class="font-bold text-sm text-white">Riwayat Scan & Jimpitan Hari Ini</h3>
+      </div>
+      <button onclick="window.loadScanHistory()" class="text-xs text-slate-400 hover:text-white transition cursor-pointer" title="Muat Ulang">
+        <i class="fa-solid fa-rotate"></i>
+      </button>
+    </div>
+    
+    <div id="scan-history-container" class="space-y-2">
+      <div class="bg-slate-900/60 border border-slate-700/50 p-3 rounded-2xl text-center text-xs text-slate-400">
+        Memuat riwayat scan...
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL KONFIRMASI JIMPITAN WARGA (PASANG / TIDAK) -->
+<div id="jimpitan-confirm-modal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+  <div id="jimpitan-confirm-card" class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-6 shadow-2xl transform scale-95 transition-transform duration-300 space-y-4">
+    <div class="text-center space-y-2">
+      <div class="w-14 h-14 bg-emerald-500/20 text-emerald-400 rounded-2xl flex items-center justify-center text-2xl mx-auto shadow-lg">
+        <i class="fa-solid fa-house-chimney-user"></i>
+      </div>
+      <h3 class="font-bold text-base text-white" id="modal-nama-kk">Nama Kepala Keluarga</h3>
+      <p class="text-xs text-purple-400 font-mono" id="modal-nokk">No. KK: -</p>
+    </div>
+
+    <div class="bg-slate-800/60 p-3.5 rounded-2xl border border-slate-700/60 space-y-1.5 text-center">
+      <p class="text-xs text-slate-400">Ketentuan Jimpitan Malam Ini:</p>
+      <p class="text-sm font-bold text-emerald-400" id="modal-info-nominal">Nominal: Rp 1.000</p>
+    </div>
+
+    <p class="text-xs text-center text-slate-300">Apakah warga ini memasang jimpitan?</p>
+
+    <div class="grid grid-cols-2 gap-2 pt-1">
+      <button type="button" onclick="window.submitJadwalJimpitan('Tidak')" class="w-full bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/40 font-semibold py-2.5 rounded-xl text-xs transition cursor-pointer">
+        <i class="fa-solid fa-xmark mr-1"></i> Tidak Pasang
+      </button>
+      <button type="button" onclick="window.submitJadwalJimpitan('Pasang')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 rounded-xl text-xs shadow-lg shadow-emerald-600/30 transition cursor-pointer">
+        <i class="fa-solid fa-check mr-1"></i> Pasang
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDIT RIWAYAT JIMPITAN -->
+<div id="edit-jimpitan-modal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+  <div id="edit-jimpitan-card" class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-6 shadow-2xl transform scale-95 transition-transform duration-300 space-y-4">
+    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+      <div class="flex items-center space-x-2 text-amber-400">
+        <i class="fa-solid fa-pen-to-square text-lg"></i>
+        <h3 class="font-bold text-sm text-white">Edit Status Jimpitan</h3>
+      </div>
+      <button type="button" onclick="window.closeEditJimpitanModal()" class="text-slate-400 hover:text-white cursor-pointer">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+    </div>
+
+    <input type="hidden" id="edit-history-id">
+    
+    <div class="space-y-3">
+      <div>
+        <p class="text-xs text-slate-400">Warga: <span id="edit-modal-nama" class="font-bold text-white"></span></p>
+        <p class="text-xs text-slate-400 font-mono">No. KK: <span id="edit-modal-nokk"></span></p>
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium text-slate-400 mb-1">Status Jimpitan</label>
+        <select id="edit-modal-status" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 cursor-pointer">
+          <option value="Pasang">Pasang</option>
+          <option value="Tidak">Tidak</option>
+        </select>
+      </div>
+
+      <button type="button" onclick="window.submitUpdateJimpitan()" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-semibold py-3 rounded-xl text-xs shadow-lg shadow-amber-600/30 transition cursor-pointer">
+        Simpan Perubahan
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PILIH WARGA MANUAL (DAFTAR NAMA WARGA) -->
+<div id="manual-scan-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+  <div id="manual-scan-card" class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 shadow-2xl transform scale-95 transition-transform duration-300 space-y-4 flex flex-col max-h-[85vh]">
+    <div class="flex items-center justify-between border-b border-slate-800 pb-3 shrink-0">
+      <div class="flex items-center space-x-2 text-purple-400">
+        <i class="fa-solid fa-users text-lg"></i>
+        <h3 class="font-bold text-sm text-white">Daftar Warga (Pilih Kepala Keluarga)</h3>
+      </div>
+      <button type="button" onclick="window.closeManualScanModal()" class="text-slate-400 hover:text-white cursor-pointer p-1">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+    </div>
+
+    <!-- Kolom Pencarian Cepat Nama / No KK -->
+    <div class="shrink-0">
+      <input type="text" id="search-warga-input" oninput="window.filterWargaList()" placeholder="Cari nama kepala keluarga atau No. KK..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-purple-500 placeholder-slate-500">
+    </div>
+
+    <!-- Container Daftar Nama Warga (Scrollable) -->
+    <div id="manual-warga-list-container" class="flex-1 overflow-y-auto space-y-2 pr-1">
+      <div class="text-center py-6 text-xs text-slate-400">Memuat daftar warga dari database...</div>
+    </div>
+  </div>
+</div>
+
+<!-- SKRIP LOGIKA SCANNER, VALIDASI DUPLIKASI, & MANAJEMEN RIWAYAT -->
+<script>
+  let scannedWargaData = null;
+  let cachedNilaiJimpitan = "1.000";
+  let allWargaCache = [];
+
+  // Ambil besaran jimpitan dari pengaturan database saat halaman dimuat
+  async function fetchNilaiJimpitanConfig() {
+    try {
+      const { db } = await import('./db.js');
+      const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+      const docSnap = await getDoc(doc(db, "settings", "wilayah"));
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        cachedNilaiJimpitan = data.nilaiJimpitan || "1.000";
+      }
+    } catch (err) {
+      console.error("Gagal memuat konfigurasi jimpitan:", err);
+    }
+  }
+  fetchNilaiJimpitanConfig();
+
+  // Ketika QR Code terbaca / warga dipilih (Dengan Validasi Duplikasi Hari Ini)
+  window.handleQRCodeScanned = async function(noKKInput) {
+    const cleanNoKK = String(noKKInput).trim();
+    if (!cleanNoKK) return;
+
+    try {
+      const { db } = await import('./db.js');
+      const { collection, getDocs, query, where } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+
+      // Cek apakah warga sudah tercatat diabsen/jimpitan pada hari ini
+      const todayStr = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+      const historyQuery = query(collection(db, "scan_history"), where("nokk", "==", cleanNoKK));
+      const historySnapshot = await getDocs(historyQuery);
+
+      let alreadyRecordedToday = false;
+      historySnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        if (data.waktu && data.waktu.includes(todayStr)) {
+          alreadyRecordedToday = true;
+        }
+      });
+
+      if (alreadyRecordedToday) {
+        if (typeof window.showToast === 'function') {
+          window.showToast(`Warga dengan No. KK "${cleanNoKK}" sudah diabsen/jimpitan hari ini!`, "warning");
+        }
+        return;
+      }
+
+      // Ambil data warga dari koleksi "warga"
+      const q = query(collection(db, "warga"), where("nokk", "==", cleanNoKK));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        if (typeof window.showToast === 'function') {
+          window.showToast(`No. KK "${cleanNoKK}" tidak ditemukan dalam database warga!`, "warning");
+        }
+        return;
+      }
+
+      const docSnap = querySnapshot.docs[0];
+      scannedWargaData = {
+        id: docSnap.id,
+        ...docSnap.data()
+      };
+
+      window.openJimpitanConfirmModal();
+    } catch (err) {
+      console.error("Gagal mencocokkan No. KK:", err);
+      if (typeof window.showToast === 'function') {
+        window.showToast("Terjadi kesalahan saat membaca data warga.", "error");
+      }
+    }
+  };
+
+  // Kontrol Modal Konfirmasi Jimpitan (Pasang / Tidak)
+  window.openJimpitanConfirmModal = function() {
+    if (!scannedWargaData) return;
+
+    const modal = document.getElementById('jimpitan-confirm-modal');
+    const card = document.getElementById('jimpitan-confirm-card');
+    const namaEl = document.getElementById('modal-nama-kk');
+    const nokkEl = document.getElementById('modal-nokk');
+    const nominalEl = document.getElementById('modal-info-nominal');
+
+    if (namaEl) namaEl.innerText = scannedWargaData.namakk || 'Tanpa Nama';
+    if (nokkEl) nokkEl.innerText = `No. KK: ${scannedWargaData.nokk || '-'}`;
+    if (nominalEl) nominalEl.innerText = `Nominal Jimpitan: Rp ${cachedNilaiJimpitan}`;
+
+    if (modal) {
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        if (card) {
+          card.classList.remove('scale-95');
+          card.classList.add('scale-100');
+        }
+      }, 10);
+    }
+  };
+
+  window.closeJimpitanConfirmModal = function() {
+    const modal = document.getElementById('jimpitan-confirm-modal');
+    const card = document.getElementById('jimpitan-confirm-card');
+    if (modal && card) {
+      modal.classList.add('opacity-0');
+      card.classList.remove('scale-100');
+      card.classList.add('scale-95');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+        scannedWargaData = null;
+      }, 300);
+    }
+  };
+
+  // Simpan hasil "Pasang" / "Tidak" ke Firebase
+  window.submitJadwalJimpitan = async function(statusPilihan) {
+    if (!scannedWargaData) return;
+
+    const petugasName = localStorage.getItem('ronda_user') || 'Petugas Ronda';
+    const nominalNilai = statusPilihan === 'Pasang' ? cachedNilaiJimpitan : '0';
+
+    try {
+      const { db } = await import('./db.js');
+      const { collection, addDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+
+      const now = new Date();
+      const timeStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0') + ' WIB';
+      const dateStr = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+
+      await addDoc(collection(db, "scan_history"), {
+        nokk: scannedWargaData.nokk,
+        namakk: scannedWargaData.namakk,
+        statusJimpitan: statusPilihan,
+        nominal: nominalNilai,
+        petugas: petugasName,
+        waktu: `${dateStr} • ${timeStr}`,
+        createdAt: now.toISOString()
+      });
+
+      window.closeJimpitanConfirmModal();
+      if (typeof window.showToast === 'function') {
+        window.showToast(`Berhasil mencatat: ${scannedWargaData.namakk} (${statusPilihan})!`);
+      }
+      window.loadScanHistory();
+    } catch (err) {
+      console.error("Gagal menyimpan jimpitan:", err);
+      if (typeof window.showToast === 'function') {
+        window.showToast("Gagal menyimpan ke database: " + err.message, "error");
+      }
+    }
+  };
+
+  // Membuka Modal Edit Riwayat Jimpitan
+  window.openEditJimpitanModal = function(historyId, nama, nokk, currentStatus) {
+    const idEl = document.getElementById('edit-history-id');
+    const namaEl = document.getElementById('edit-modal-nama');
+    const nokkEl = document.getElementById('edit-modal-nokk');
+    const statusEl = document.getElementById('edit-modal-status');
+
+    if (idEl) idEl.value = historyId;
+    if (namaEl) namaEl.innerText = nama;
+    if (nokkEl) nokkEl.innerText = nokk;
+    if (statusEl) statusEl.value = currentStatus;
+
+    const modal = document.getElementById('edit-jimpitan-modal');
+    const card = document.getElementById('edit-jimpitan-card');
+    if (modal) {
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        if (card) {
+          card.classList.remove('scale-95');
+          card.classList.add('scale-100');
+        }
+      }, 10);
+    }
+  };
+
+  window.closeEditJimpitanModal = function() {
+    const modal = document.getElementById('edit-jimpitan-modal');
+    const card = document.getElementById('edit-jimpitan-card');
+    if (modal && card) {
+      modal.classList.add('opacity-0');
+      card.classList.remove('scale-100');
+      card.classList.add('scale-95');
+      setTimeout(() => modal.classList.add('hidden'), 300);
+    }
+  };
+
+  window.submitUpdateJimpitan = async function() {
+    const historyId = document.getElementById('edit-history-id')?.value;
+    const newStatus = document.getElementById('edit-modal-status')?.value;
+
+    if (!historyId || !newStatus) return;
+
+    try {
+      const { db } = await import('./db.js');
+      const { doc, getDoc, updateDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+
+      const docRef = doc(db, "scan_history", historyId);
+      const settingsSnap = await getDoc(doc(db, "settings", "wilayah"));
+      const nominalPasang = settingsSnap.exists() ? (settingsSnap.data().nilaiJimpitan || "1.000") : "1.000";
+      const nominalFinal = newStatus === 'Pasang' ? nominalPasang : '0';
+
+      await updateDoc(docRef, {
+        statusJimpitan: newStatus,
+        nominal: nominalFinal,
+        updatedAt: new Date().toISOString()
+      });
+
+      window.closeEditJimpitanModal();
+      if (typeof window.showToast === 'function') {
+        window.showToast("Status jimpitan berhasil diperbarui!");
+      }
+      window.loadScanHistory();
+    } catch (err) {
+      console.error("Gagal memperbarui jimpitan:", err);
+      if (typeof window.showToast === 'function') {
+        window.showToast("Gagal memperbarui data: " + err.message, "error");
+      }
+    }
+  };
+
+  // Menghapus Riwayat Jimpitan
+  window.deleteScanHistory = async function(historyId, namaWarga) {
+    if (confirm(`Hapus catatan jimpitan untuk warga "${namaWarga}"?`)) {
+      try {
+        const { db } = await import('./db.js');
+        const { doc, deleteDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+
+        await deleteDoc(doc(db, "scan_history", historyId));
+        if (typeof window.showToast === 'function') {
+          window.showToast(`Catatan jimpitan "${namaWarga}" berhasil dihapus.`);
+        }
+        window.loadScanHistory();
+      } catch (err) {
+        console.error("Gagal menghapus riwayat:", err);
+        if (typeof window.showToast === 'function') {
+          window.showToast("Gagal menghapus data.", "error");
+        }
+      }
+    }
+  };
+
+  // Membuka Modal Daftar Warga Manual
+  window.openManualScanModal = async function() {
+    const modal = document.getElementById('manual-scan-modal');
+    const card = document.getElementById('manual-scan-card');
+    const container = document.getElementById('manual-warga-list-container');
+    const searchInput = document.getElementById('search-warga-input');
+
+    if (searchInput) searchInput.value = '';
+    if (container) {
+      container.innerHTML = `<div class="text-center py-6 text-xs text-slate-400">Memuat daftar warga...</div>`;
+    }
+
+    if (modal) {
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        if (card) {
+          card.classList.remove('scale-95');
+          card.classList.add('scale-100');
+        }
+      }, 10);
+    }
+
+    try {
+      const { db } = await import('./db.js');
+      const { collection, getDocs } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+      const querySnapshot = await getDocs(collection(db, "warga"));
+
+      allWargaCache = [];
+      querySnapshot.forEach((docSnap) => {
+        allWargaCache.push({ id: docSnap.id, ...docSnap.data() });
+      });
+
+      window.renderWargaList(allWargaCache);
+    } catch (err) {
+      console.error("Gagal memuat warga:", err);
+      if (container) {
+        container.innerHTML = `<div class="text-center py-6 text-xs text-rose-400">Gagal memuat data warga dari database.</div>`;
+      }
+    }
+  };
+
+  window.closeManualScanModal = function() {
+    const modal = document.getElementById('manual-scan-modal');
+    const card = document.getElementById('manual-scan-card');
+    if (modal && card) {
+      modal.classList.add('opacity-0');
+      card.classList.remove('scale-100');
+      card.classList.add('scale-95');
+      setTimeout(() => modal.classList.add('hidden'), 300);
+    }
+  };
+
+  // Render daftar nama warga ke dalam list interaktif
+  window.renderWargaList = function(wargaArray) {
+    const container = document.getElementById('manual-warga-list-container');
+    if (!container) return;
+
+    if (wargaArray.length === 0) {
+      container.innerHTML = `<div class="text-center py-6 text-xs text-slate-400">Tidak ada data warga ditemukan.</div>`;
+      return;
+    }
+
+    let html = '';
+    wargaArray.forEach((warga) => {
+      const safeNoKK = String(warga.nokk || '').replace(/'/g, "\\'");
+
+      html += `
+        <button type="button" onclick="window.selectWargaManual('${safeNoKK}')" class="w-full text-left bg-slate-800/80 hover:bg-purple-600/25 hover:border-purple-500/50 border border-slate-700/60 p-3 rounded-2xl transition flex items-center justify-between cursor-pointer group">
+          <div>
+            <p class="font-bold text-xs text-white group-hover:text-purple-300">${warga.namakk || '-'}</p>
+            <p class="text-[10px] text-slate-400 font-mono mt-0.5">No. KK: ${warga.nokk || '-'}</p>
+          </div>
+          <div class="w-7 h-7 bg-slate-700 group-hover:bg-purple-600 text-slate-300 group-hover:text-white rounded-xl flex items-center justify-center transition text-xs">
+            <i class="fa-solid fa-chevron-right text-[10px]"></i>
+          </div>
+        </button>
+      `;
+    });
+
+    container.innerHTML = html;
+  };
+
+  // Fitur Filter Pencarian Cepat Nama Warga
+  window.filterWargaList = function() {
+    const keyword = document.getElementById('search-warga-input')?.value.toLowerCase() || '';
+    const filtered = allWargaCache.filter(w => 
+      (w.namakk && w.namakk.toLowerCase().includes(keyword)) || 
+      (w.nokk && w.nokk.toLowerCase().includes(keyword))
+    );
+    window.renderWargaList(filtered);
+  };
+
+  window.selectWargaManual = function(nokk) {
+    window.closeManualScanModal();
+    window.handleQRCodeScanned(nokk);
+  };
+
+  // Memuat Riwayat Scan & Jimpitan (Dilengkapi Tombol Edit & Hapus)
+  window.loadScanHistory = async function() {
+    const container = document.getElementById('scan-history-container');
+    if (!container) return;
+
+    try {
+      const { db } = await import('./db.js');
+      const { collection, getDocs } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+
+      const querySnapshot = await getDocs(collection(db, "scan_history"));
+      if (querySnapshot.empty) {
+        container.innerHTML = `
+          <div class="bg-slate-900/60 border border-slate-700/50 p-3 rounded-2xl text-center text-xs text-slate-400">
+            Belum ada catatan jimpitan warga hari ini.
+          </div>
+        `;
+        return;
+      }
+
+      let html = '';
+      querySnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        const docId = docSnap.id;
+        const isPasang = data.statusJimpitan === 'Pasang';
+        const badgeColor = isPasang ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border-rose-500/30';
+        const iconClass = isPasang ? 'fa-circle-check text-emerald-400' : 'fa-circle-xmark text-rose-400';
+
+        const safeNama = String(data.namakk || 'Warga').replace(/'/g, "\\'");
+        const safeNoKK = String(data.nokk || '-').replace(/'/g, "\\'");
+        const safeStatus = String(data.statusJimpitan || 'Tidak').replace(/'/g, "\\'");
+
+        html += `
+          <div class="bg-slate-900/60 border border-slate-700/50 p-3 rounded-2xl flex items-center justify-between text-xs">
+            <div class="flex items-center space-x-2.5">
+              <div class="w-8 h-8 rounded-xl ${badgeColor} border flex items-center justify-center font-bold shrink-0">
+                <i class="fa-solid ${iconClass}"></i>
+              </div>
+              <div>
+                <p class="font-bold text-white">${data.namakk || 'Warga'} <span class="text-[10px] text-purple-400 font-mono font-normal">(KK: ${data.nokk || '-'})</span></p>
+                <p class="text-[10px] text-slate-400">Petugas: ${data.petugas || 'Petugas'} • <span class="text-emerald-400 font-semibold">Rp ${data.nominal || '0'}</span> • <span class="text-slate-400">${data.waktu || ''}</span></p>
+              </div>
+            </div>
+            
+            <div class="flex items-center space-x-2 shrink-0">
+              <span class="text-[10px] ${isPasang ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300'} px-2 py-1 rounded-lg font-bold">${data.statusJimpitan}</span>
+              
+              <!-- Tombol Edit -->
+              <button type="button" onclick="window.openEditJimpitanModal('${docId}', '${safeNama}', '${safeNoKK}', '${safeStatus}')" class="w-7 h-7 bg-slate-800 hover:bg-amber-600 text-slate-300 hover:text-white rounded-lg flex items-center justify-center transition cursor-pointer" title="Edit">
+                <i class="fa-solid fa-pen text-[10px]"></i>
+              </button>
+
+              <!-- Tombol Hapus -->
+              <button type="button" onclick="window.deleteScanHistory('${docId}', '${safeNama}')" class="w-7 h-7 bg-slate-800 hover:bg-rose-600 text-slate-300 hover:text-white rounded-lg flex items-center justify-center transition cursor-pointer" title="Hapus">
+                <i class="fa-solid fa-trash text-[10px]"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    } catch (err) {
+      console.error("Gagal memuat riwayat:", err);
+      container.innerHTML = `
+        <div class="bg-slate-900/60 border border-slate-700/50 p-3 rounded-2xl text-center text-xs text-rose-400">
+          Gagal memuat riwayat jimpitan.
+        </div>
+      `;
+    }
+  };
+
+  window.loadScanHistory();
+</script>

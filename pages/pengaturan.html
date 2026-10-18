@@ -1,0 +1,430 @@
+<div class="space-y-5 pb-24">
+  <!-- Greeting, Date Banner & Tombol Kembali ke Home -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 id="greeting-text" class="text-xl font-bold text-white">Selamat pagi, Petugas Ronda</h1>
+      <p class="text-sm text-slate-400 mt-0.5"><span id="date-text">Minggu Wage, 18 Oktober 2026</span> &bull; <span id="time-text" class="text-emerald-400 font-medium">08:22 WIB</span></p>
+    </div>
+    <button onclick="loadPage('home')" class="w-10 h-10 bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-300 rounded-2xl flex items-center justify-center transition shadow-md cursor-pointer shrink-0 ml-3" title="Kembali ke Beranda">
+      <i class="fa-solid fa-arrow-left text-sm"></i>
+    </button>
+  </div>
+
+  <!-- Header Card -->
+  <div class="bg-gradient-to-r from-purple-600 to-indigo-600 p-5 rounded-3xl shadow-lg shadow-purple-500/20 text-white relative overflow-hidden flex items-center justify-between">
+    <div>
+      <div class="flex items-center space-x-2 bg-white/20 w-fit px-3 py-1 rounded-full text-xs font-semibold mb-2 backdrop-blur-sm">
+        <i class="fa-solid fa-gear"></i>
+        <span>Panel Pengaturan</span>
+      </div>
+      <h2 class="text-lg font-bold">Konfigurasi Sistem RT</h2>
+      <p class="text-xs text-white/80 mt-1">Kelola wilayah, jadwal, warga jimpitan, dan peraturan</p>
+    </div>
+    <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-2xl backdrop-blur-sm">
+      <i class="fa-solid fa-sliders"></i>
+    </div>
+  </div>
+
+  <!-- TAB NAVIGATION BUTTONS (4 TAB) -->
+  <div class="grid grid-cols-4 gap-1.5 bg-slate-800/80 p-1.5 rounded-2xl border border-slate-700/50">
+    <button id="btn-tab1" onclick="switchTab(1)" class="py-2.5 px-1 rounded-xl text-xs font-bold text-white bg-purple-600 shadow-md transition flex flex-col items-center space-y-1 cursor-pointer">
+      <i class="fa-solid fa-map-location-dot"></i>
+      <span>Wilayah</span>
+    </button>
+    <button id="btn-tab2" onclick="switchTab(2)" class="py-2.5 px-1 rounded-xl text-xs font-medium text-slate-400 hover:text-white transition flex flex-col items-center space-y-1 cursor-pointer">
+      <i class="fa-solid fa-calendar-plus"></i>
+      <span>Jadwal</span>
+    </button>
+    <button id="btn-tab3" onclick="switchTab(3)" class="py-2.5 px-1 rounded-xl text-xs font-medium text-slate-400 hover:text-white transition flex flex-col items-center space-y-1 cursor-pointer">
+      <i class="fa-solid fa-users-rectangle"></i>
+      <span>Warga</span>
+    </button>
+    <button id="btn-tab4" onclick="switchTab(4)" class="py-2.5 px-1 rounded-xl text-xs font-medium text-slate-400 hover:text-white transition flex flex-col items-center space-y-1 cursor-pointer">
+      <i class="fa-solid fa-book-bookmark"></i>
+      <span>Peraturan</span>
+    </button>
+  </div>
+
+  <!-- TAB CONTENT CONTAINER -->
+  <div id="tab-content" class="space-y-4 pb-24">
+    
+    <!-- TAB 1: SETTING WILAYAH -->
+    <div id="content-tab1" class="space-y-4">
+      <div class="bg-slate-800/60 border border-slate-800 p-5 rounded-3xl space-y-4">
+        <div class="flex items-center space-x-2.5 text-purple-400">
+          <i class="fa-solid fa-house-chimney text-lg"></i>
+          <h3 class="font-bold text-sm text-white">Informasi Pos &amp; Wilayah</h3>
+        </div>
+
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-400 mb-1">Nama Wilayah / RT</label>
+            <input type="text" id="wilayah-rt" value="RT 04 / RW 08" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-400 mb-1">Nama Pos Kamling</label>
+            <input type="text" id="wilayah-pos" value="Pos Kamling Utama" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-400 mb-1">Nama Pedukuhan</label>
+            <input type="text" id="wilayah-dukuh" value="Potrobayan" placeholder="Contoh: Potrobayan / Tulung" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-400 mb-1">Nilai Iuran Wajib (Jimpitan)</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-xs font-bold text-purple-400">Rp</span>
+              <input type="text" id="wilayah-jimpitan" value="1.000" placeholder="Contoh: 1.000" class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500">
+            </div>
+          </div>
+          <button onclick="window.saveWilayahConfig()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-xl text-sm shadow-lg shadow-purple-600/30 transition mt-2 cursor-pointer">
+            Simpan Perubahan Wilayah
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: JADWAL RONDA & REGU JAGA -->
+    <div id="content-tab2" class="space-y-4 hidden">
+      <div class="bg-gradient-to-r from-purple-600 to-indigo-600 p-5 rounded-3xl shadow-lg shadow-purple-500/20 text-white relative overflow-hidden flex items-center justify-between">
+        <div>
+          <div class="flex items-center space-x-2 bg-white/20 w-fit px-3 py-1 rounded-full text-xs font-semibold mb-2 backdrop-blur-sm">
+            <i class="fa-solid fa-calendar-days"></i>
+            <span>Manajemen Jadwal</span>
+          </div>
+          <h2 class="text-lg font-bold">Daftar Regu Jaga &amp; Pasaran</h2>
+          <p class="text-xs text-white/80 mt-1">Terhubung langsung dengan Firebase Firestore</p>
+        </div>
+        <button type="button" onclick="openJadwalModal()" class="bg-white text-purple-900 hover:bg-purple-50 text-xs font-bold px-4 py-3 rounded-2xl shadow-lg transition transform active:scale-95 cursor-pointer flex items-center space-x-2 shrink-0">
+          <i class="fa-solid fa-calendar-plus text-sm"></i>
+          <span>Tambah Jadwal</span>
+        </button>
+      </div>
+
+      <div class="bg-slate-800/60 border border-slate-800 p-5 rounded-3xl space-y-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-2.5 text-purple-400">
+            <i class="fa-solid fa-list-check text-lg"></i>
+            <h3 class="font-bold text-sm text-white">Daftar Regu Jaga Aktif</h3>
+          </div>
+          <button onclick="window.loadJadwalFromFirestore()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs px-3 py-1.5 rounded-xl transition flex items-center space-x-1.5 cursor-pointer">
+            <i class="fa-solid fa-rotate text-xs"></i>
+            <span>Muat Ulang</span>
+          </button>
+        </div>
+
+        <div id="jadwal-list-container" class="space-y-3">
+          <p class="text-xs text-slate-400 text-center py-3">Memuat daftar jadwal...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: WARGA (Wajib Jimpitan) -->
+    <div id="content-tab3" class="space-y-4 hidden">
+      <div class="bg-gradient-to-r from-purple-600 to-indigo-600 p-5 rounded-3xl shadow-lg shadow-purple-500/20 text-white relative overflow-hidden flex items-center justify-between">
+        <div>
+          <div class="flex items-center space-x-2 bg-white/20 w-fit px-3 py-1 rounded-full text-xs font-semibold mb-2 backdrop-blur-sm">
+            <i class="fa-solid fa-users-rectangle"></i>
+            <span>Manajemen Warga</span>
+          </div>
+          <h2 class="text-lg font-bold">Data Warga Jimpitan</h2>
+          <p class="text-xs text-white/80 mt-1">Daftar Kepala Keluarga wajib iuran jimpitan</p>
+        </div>
+        <button type="button" onclick="window.openWargaModal()" class="bg-white text-purple-900 hover:bg-purple-50 text-xs font-bold px-4 py-3 rounded-2xl shadow-lg transition transform active:scale-95 cursor-pointer flex items-center space-x-2 shrink-0">
+          <i class="fa-solid fa-user-plus text-sm"></i>
+          <span>Tambah Warga</span>
+        </button>
+      </div>
+
+      <div class="bg-slate-800/60 border border-slate-800 p-5 rounded-3xl space-y-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-2.5 text-purple-400">
+            <i class="fa-solid fa-list-ul text-base"></i>
+            <h3 class="font-bold text-sm text-white">Daftar Warga Wajib Jimpitan</h3>
+          </div>
+          <button onclick="window.loadWargaFromFirestore()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs px-3 py-1.5 rounded-xl transition flex items-center space-x-1.5 cursor-pointer">
+            <i class="fa-solid fa-rotate text-xs"></i>
+            <span>Muat Ulang</span>
+          </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="border-b border-slate-700/60 text-[11px] text-slate-400 uppercase tracking-wider">
+                <th class="py-2.5 px-3">No. KK / Kepala Keluarga</th>
+                <th class="py-2.5 px-3 text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="warga-table-body" class="divide-y divide-slate-700/40 text-xs text-slate-200">
+              <tr>
+                <td colspan="2" class="py-4 text-center text-slate-400">Memuat data warga...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: PERATURAN RONDA (TERHUBUNG KE FIRESTORE) -->
+    <div id="content-tab4" class="space-y-4 hidden">
+      <div class="bg-slate-800/60 border border-slate-800 p-5 rounded-3xl space-y-4">
+        <div class="flex items-center space-x-2.5 text-purple-400">
+          <i class="fa-solid fa-book-bookmark text-lg"></i>
+          <h3 class="font-bold text-sm text-white">Kelola Peraturan &amp; Tata Tertib</h3>
+        </div>
+
+        <input type="hidden" id="edit-peraturan-id" value="">
+
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-400 mb-1">Judul Peraturan / Ketentuan</label>
+            <input type="text" id="peraturan-judul" placeholder="Contoh: Wajib Patroli Setiap 2 Jam" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-400 mb-1">Isi Peraturan / Sanksi</label>
+            <textarea id="peraturan-isi" rows="4" placeholder="Tuliskan isi peraturan ronda..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500"></textarea>
+          </div>
+          <button onclick="window.savePeraturanToFirestore()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-xl text-sm shadow-lg shadow-purple-600/30 transition mt-2 cursor-pointer">
+            Simpan / Perbarui Peraturan
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- POP-UP MODAL INPUT / EDIT WARGA (JIMBITAN) -->
+<div id="local-warga-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+  <div id="local-warga-card" class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl transform translate-y-full sm:translate-y-0 sm:scale-95 transition-transform duration-300 space-y-4 max-h-[90vh] overflow-y-auto">
+    
+    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+      <div class="flex items-center space-x-2.5 text-purple-400">
+        <i class="fa-solid fa-users-rectangle text-lg"></i>
+        <h3 id="warga-modal-title" class="font-bold text-sm text-white">Tambah Data Warga (Wajib Jimpitan)</h3>
+      </div>
+      <button type="button" onclick="window.closeWargaModal()" class="text-slate-400 hover:text-white p-1 cursor-pointer">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+    </div>
+
+    <input type="hidden" id="edit-warga-id" value="">
+
+    <div class="space-y-3.5">
+      <div>
+        <label class="block text-xs font-medium text-slate-400 mb-1">Nomor Kartu Keluarga (No. KK)</label>
+        <input type="text" id="warga-nokk" placeholder="Contoh: 34040xxxxxxxxx" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500 transition">
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium text-slate-400 mb-1">Nama Kepala Keluarga</label>
+        <input type="text" id="warga-namakk" placeholder="Contoh: Budi Santoso" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500 transition">
+      </div>
+
+      <div class="pt-2">
+        <button type="button" onclick="window.saveWargaToFirestore()" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold py-3 rounded-xl text-sm shadow-lg shadow-purple-600/30 transition transform active:scale-95 cursor-pointer">
+          Simpan Warga ke Database
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- POP-UP MODAL INPUT / EDIT JADWAL & REGU JAGA -->
+<div id="local-jadwal-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+  <div id="local-jadwal-card" class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl transform translate-y-full sm:translate-y-0 sm:scale-95 transition-transform duration-300 space-y-4 max-h-[90vh] overflow-y-auto">
+    
+    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+      <div class="flex items-center space-x-2.5 text-purple-400">
+        <i class="fa-solid fa-calendar-plus text-lg"></i>
+        <h3 id="jadwal-modal-title" class="font-bold text-sm text-white">Formulir Input Jadwal &amp; Regu Jaga</h3>
+      </div>
+      <button type="button" onclick="closeJadwalModal()" class="text-slate-400 hover:text-white p-1 cursor-pointer">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+    </div>
+
+    <input type="hidden" id="edit-jadwal-doc-id" value="">
+
+    <div class="space-y-3.5">
+      <div>
+        <label class="block text-xs font-medium text-slate-400 mb-1">Pilih Nama Pasaran</label>
+        <select id="jadwal-pasaran" onchange="window.checkExistingPasaran(this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500 transition cursor-pointer">
+          <option value="" disabled selected>-- Pilih Nama Pasaran --</option>
+          <option>Legi</option>
+          <option>Pahing</option>
+          <option>Pon</option>
+          <option>Wage</option>
+          <option>Kliwon</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium text-slate-400 mb-1">Nama Kelompok / Regu Jaga</label>
+        <input type="text" id="jadwal-kelompok" placeholder="Contoh: Kelompok Regu Wage" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500 transition">
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium text-slate-400 mb-1">Daftar Petugas (Pisahkan dengan koma atau baris baru)</label>
+        <textarea id="jadwal-petugas" rows="4" placeholder="Ismanto, Budi Santoso, Wahyudi, Hadi Kusuma" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500 transition"></textarea>
+      </div>
+
+      <div class="pt-2">
+        <button type="button" onclick="window.submitJadwalRonda()" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold py-3 rounded-xl text-sm shadow-lg shadow-purple-600/30 transition transform active:scale-95 cursor-pointer">
+          Simpan Jadwal Ronda
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- POP-UP MODAL KONFIRMASI DUPLIKASI PASARAN -->
+<div id="local-confirm-pasaran-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+  <div id="local-confirm-pasaran-card" class="bg-slate-900 border border-slate-800 w-full max-w-xs rounded-3xl p-6 shadow-2xl transform scale-95 transition-transform duration-300 text-center space-y-4">
+    <div class="w-12 h-12 bg-amber-500/20 text-amber-400 rounded-2xl flex items-center justify-center text-xl mx-auto">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+    </div>
+    <div>
+      <h3 class="font-bold text-sm text-white mb-1">Data Sudah Ada</h3>
+      <p id="confirm-pasaran-text" class="text-xs text-slate-400">Jadwal untuk pasaran ini sudah terdaftar. Melanjutkan = edit / batal?</p>
+    </div>
+    <div class="grid grid-cols-2 gap-2 pt-2">
+      <button type="button" onclick="window.cancelPasaranDuplicate()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold py-2.5 rounded-xl transition cursor-pointer">
+        Batal
+      </button>
+      <button type="button" onclick="window.proceedPasaranEdit()" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold py-2.5 rounded-xl transition shadow-md shadow-purple-600/30 cursor-pointer">
+        Edit
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- SCRIPT PENGATURAN, SWITCH TAB 4, & MODAL WARGA -->
+<script>
+  window.switchTab = function(tabIndex) {
+    const tab1 = document.getElementById('content-tab1');
+    const tab2 = document.getElementById('content-tab2');
+    const tab3 = document.getElementById('content-tab3');
+    const tab4 = document.getElementById('content-tab4');
+
+    if (tab1) tab1.classList.add('hidden');
+    if (tab2) tab2.classList.add('hidden');
+    if (tab3) tab3.classList.add('hidden');
+    if (tab4) tab4.classList.add('hidden');
+
+    const btn1 = document.getElementById('btn-tab1');
+    const btn2 = document.getElementById('btn-tab2');
+    const btn3 = document.getElementById('btn-tab3');
+    const btn4 = document.getElementById('btn-tab4');
+
+    const resetBtnStyle = (btn) => {
+      if (!btn) return;
+      btn.className = "py-2.5 px-1 rounded-xl text-xs font-medium text-slate-400 hover:text-white transition flex flex-col items-center space-y-1 cursor-pointer";
+    };
+
+    resetBtnStyle(btn1);
+    resetBtnStyle(btn2);
+    resetBtnStyle(btn3);
+    resetBtnStyle(btn4);
+
+    if (tabIndex === 1) {
+      if (tab1) tab1.classList.remove('hidden');
+      if (btn1) btn1.className = "py-2.5 px-1 rounded-xl text-xs font-bold text-white bg-purple-600 shadow-md transition flex flex-col items-center space-y-1 cursor-pointer";
+      if (typeof window.loadWilayahConfig === 'function') window.loadWilayahConfig();
+    } else if (tabIndex === 2) {
+      if (tab2) tab2.classList.remove('hidden');
+      if (btn2) btn2.className = "py-2.5 px-1 rounded-xl text-xs font-bold text-white bg-purple-600 shadow-md transition flex flex-col items-center space-y-1 cursor-pointer";
+      if (typeof window.loadJadwalFromFirestore === 'function') window.loadJadwalFromFirestore();
+    } else if (tabIndex === 3) {
+      if (tab3) tab3.classList.remove('hidden');
+      if (btn3) btn3.className = "py-2.5 px-1 rounded-xl text-xs font-bold text-white bg-purple-600 shadow-md transition flex flex-col items-center space-y-1 cursor-pointer";
+      if (typeof window.loadWargaFromFirestore === 'function') window.loadWargaFromFirestore();
+    } else if (tabIndex === 4) {
+      if (tab4) tab4.classList.remove('hidden');
+      if (btn4) btn4.className = "py-2.5 px-1 rounded-xl text-xs font-bold text-white bg-purple-600 shadow-md transition flex flex-col items-center space-y-1 cursor-pointer";
+      if (typeof window.loadPeraturanFromFirestore === 'function') window.loadPeraturanFromFirestore();
+    }
+  };
+
+  // Otomatis muat konfigurasi wilayah saat halaman pertama dibuka
+  if (typeof window.loadWilayahConfig === 'function') {
+    window.loadWilayahConfig();
+  }
+
+  // Fungsi Kontrol Modal Warga
+  window.openWargaModal = function(docId = '', nokk = '', namakk = '') {
+    const modal = document.getElementById('local-warga-modal');
+    const card = document.getElementById('local-warga-card');
+    const titleEl = document.getElementById('warga-modal-title');
+    const idInput = document.getElementById('edit-warga-id');
+    const nokkInput = document.getElementById('warga-nokk');
+    const namakkInput = document.getElementById('warga-namakk');
+
+    if (idInput) idInput.value = docId;
+    if (nokkInput) nokkInput.value = nokk;
+    if (namakkInput) namakkInput.value = namakk;
+    if (titleEl) titleEl.innerText = docId ? 'Edit Data Warga' : 'Tambah Data Warga (Wajib Jimpitan)';
+
+    if (modal) {
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        if (card) {
+          card.classList.remove('translate-y-full', 'sm:scale-95');
+          card.classList.add('translate-y-0', 'sm:scale-100');
+        }
+      }, 10);
+    }
+  };
+
+  window.closeWargaModal = function() {
+    const modal = document.getElementById('local-warga-modal');
+    const card = document.getElementById('local-warga-card');
+    if (modal && card) {
+      modal.classList.add('opacity-0');
+      card.classList.remove('translate-y-0', 'sm:scale-100');
+      card.classList.add('translate-y-full', 'sm:scale-95');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+        document.getElementById('edit-warga-id').value = '';
+        document.getElementById('warga-nokk').value = '';
+        document.getElementById('warga-namakk').value = '';
+      }, 300);
+    }
+  };
+
+  (function() {
+    const now = new Date();
+    const optionsDate = { day: 'numeric', month: 'long', year: 'numeric' };
+    const restDate = now.toLocaleDateString('id-ID', optionsDate);
+    const dayName = now.toLocaleDateString('id-ID', { weekday: 'long' });
+    
+    function getJawaPasaranLocal(date) {
+      const pasaranList = ['Pon', 'Wage', 'Kliwon', 'Legi', 'Pahing'];
+      const acuan = new Date(2000, 0, 1);
+      const selisihHari = Math.floor((date - acuan) / (1000 * 60 * 60 * 24));
+      let indexPasaran = (selisihHari % 5);
+      if (indexPasaran < 0) indexPasaran += 5;
+      return pasaranList[indexPasaran];
+    }
+
+    const finalDateStr = `${dayName} ${getJawaPasaranLocal(now)}, ${restDate}`;
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const formattedTime = `${hours}:${minutes} WIB`;
+    
+    const hourNum = now.getHours();
+    let greeting = "Selamat malam";
+    if (hourNum >= 3 && hourNum < 11) greeting = "Selamat pagi";
+    else if (hourNum >= 11 && hourNum < 15) greeting = "Selamat siang";
+    else if (hourNum >= 15 && hourNum < 18) greeting = "Selamat sore";
+
+    const gEl = document.getElementById('greeting-text');
+    const dEl = document.getElementById('date-text');
+    const tEl = document.getElementById('time-text');
+
+    if(gEl) gEl.innerText = `${greeting}, Petugas Ronda`;
+    if(dEl) dEl.innerText = finalDateStr;
+    if(tEl) tEl.innerText = formattedTime;
+  })();
+</script>

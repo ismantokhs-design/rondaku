@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aplikasi Ronda-Ku</title>
+  <!-- Pengecekan Login Sederhana -->
+  <script>
+    if (!localStorage.getItem('ronda_logged_in')) {
+      window.location.href = 'login.html';
+    }
+  </script>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+  <!-- CSS Khusus untuk menyembunyikan scrollbar tapi tetap bisa digeser -->
+  <style>
+    #scrollable-content::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
+    #scrollable-content {
+      -ms-overflow-style: none !important;
+      scrollbar-width: none !important;
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans antialiased h-full overflow-hidden flex justify-center">
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast-container" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 flex flex-col space-y-2 pointer-events-none w-11/12 max-w-sm"></div>
+
+  <!-- CUSTOM SMOOTH LOGOUT MODAL -->
+  <div id="custom-logout-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+    <div id="logout-modal-card" class="bg-slate-800 border border-slate-700 w-full max-w-xs rounded-3xl p-6 shadow-2xl transform scale-90 transition-transform duration-300 text-center space-y-4">
+      <div class="w-14 h-14 bg-red-500/20 text-red-400 rounded-2xl flex items-center justify-center text-2xl mx-auto shadow-lg shadow-red-500/10">
+        <i class="fa-solid fa-right-from-bracket"></i>
+      </div>
+      <div>
+        <h3 class="text-base font-bold text-white tracking-wide">Konfirmasi Keluar</h3>
+        <p class="text-xs text-slate-400 mt-1">Apakah Anda yakin ingin keluar dari sesi Ronda-Ku?</p>
+      </div>
+      <div class="grid grid-cols-2 gap-2 pt-2">
+        <button onclick="closeLogoutModal()" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold py-2.5 rounded-xl text-xs transition">
+          Batal
+        </button>
+        <button onclick="executeLogout()" class="w-full bg-red-600 hover:bg-red-500 text-white font-semibold py-2.5 rounded-xl text-xs shadow-lg shadow-red-600/30 transition">
+          Ya, Keluar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN TRANSITION KELUAR -->
+  <div id="logout-transition-overlay" class="fixed inset-0 bg-gradient-to-tr from-slate-950 via-slate-900 to-emerald-950 z-[100] flex flex-col justify-center items-center text-white opacity-0 invisible transition-all duration-500">
+    <div class="text-center space-y-3">
+      <div class="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto text-emerald-400 text-2xl animate-pulse">
+        <i class="fa-solid fa-shield-halved"></i>
+      </div>
+      <h2 class="text-xl font-bold tracking-wider">RONDA-KU</h2>
+      <p id="logout-status-text" class="text-xs text-slate-400">Menutup Sesi Petugas...</p>
+      <div class="w-8 h-8 border-2 border-emerald-500/30 border-t-emerald-400 rounded-full animate-spin mx-auto mt-2"></div>
+    </div>
+  </div>
+
+  <!-- Sidebar Overlay -->
+  <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-40 hidden transition-opacity"></div>
+
+  <!-- Sidebar / Drawer Navigasi -->
+  <aside id="sidebar" class="fixed top-0 left-0 bottom-0 w-72 bg-slate-900 z-50 transform -translate-x-full transition-transform duration-300 ease-in-out border-r border-slate-800 flex flex-col">
+    <div class="p-5 border-b border-slate-800 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="bg-emerald-500/20 text-emerald-400 p-2.5 rounded-xl">
+          <i class="fa-solid fa-shield-halved text-xl"></i>
+        </div>
+        <div>
+          <h2 class="font-bold text-lg tracking-wider">RONDA-KU</h2>
+          <p class="text-xs text-slate-400">Sistem Keamanan Warga</p>
+        </div>
+      </div>
+      <button id="close-sidebar" class="text-slate-400 hover:text-white p-2">
+        <i class="fa-solid fa-xmark text-xl"></i>
+      </button>
+    </div>
+
+    <!-- Menu List -->
+    <nav class="flex-1 p-4 space-y-1.5 overflow-y-auto">
+      <a href="#" onclick="loadPage('home')" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-xl bg-emerald-500 text-white font-medium shadow-lg shadow-emerald-500/20">
+        <i class="fa-solid fa-house w-5"></i>
+        <span>Beranda</span>
+      </a>
+      <a href="#" onclick="loadPage('jadwal')" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 transition">
+        <i class="fa-solid fa-calendar-days w-5"></i>
+        <span>Jadwal Ronda</span>
+      </a>
+      <a href="#" onclick="loadPage('laporan')" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 transition">
+        <i class="fa-solid fa-clipboard-list w-5"></i>
+        <span>Laporan Warga</span>
+      </a>
+      <a href="#" onclick="loadPage('scan')" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 transition">
+        <i class="fa-solid fa-qrcode w-5"></i>
+        <span>Scan QR Pos</span>
+      </a>
+      <a href="#" onclick="loadPage('koordinator')" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 transition">
+        <i class="fa-solid fa-phone-volume w-5"></i>
+        <span>Hubungi Koordinator</span>
+      </a>
+    </nav>
+
+    <div class="p-4 border-t border-slate-800 text-center text-xs text-slate-500">
+      Ronda-Ku v1.0.0 &bull; Firebase Connected
+    </div>
+  </aside>
+
+  <!-- Main Container -->
+  <div id="app-container" class="w-full max-w-md h-full bg-slate-900 shadow-2xl relative flex flex-col">
+    
+    <!-- FIXED HEADER AREA -->
+    <header class="sticky top-0 bg-slate-900 z-30 p-5 pb-4 shadow-md shadow-slate-950/20 border-b border-slate-800">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-sm">
+            <i class="fa-solid fa-shield-halved"></i>
+          </div>
+          <div>
+            <h2 id="app-header-title" class="font-bold text-sm text-white tracking-wide">RONDA RT 04</h2>
+            <p id="app-header-subtitle" class="text-[10px] text-slate-400">Pedukuhan Potrobayan &bull; Pos Utama</p>
+          </div>
+        </div>
+        
+        <div class="flex items-center space-x-3">
+          <button class="relative text-slate-300 hover:text-white p-1">
+            <i class="fa-regular fa-bell text-xl"></i>
+            <span class="absolute top-0 right-0 w-2.5 h-2.5 bg-amber-400 rounded-full ring-2 ring-slate-900"></span>
+          </button>
+          
+          <!-- PROFILE DROPDOWN CONTAINER -->
+          <div class="relative">
+            <button id="profile-btn" onclick="toggleProfileDropdown()" class="focus:outline-none flex items-center">
+              <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="Profil" class="w-10 h-10 rounded-full object-cover ring-2 ring-emerald-500/50 hover:ring-emerald-400 transition">
+            </button>
+
+            <!-- Dropdown Menu Box -->
+            <div id="profile-dropdown" class="hidden absolute right-0 mt-2 w-52 bg-slate-800 border border-slate-700 rounded-2xl shadow-xl py-2 z-50 text-sm">
+              <div class="px-4 py-2 border-b border-slate-700/60 mb-1">
+                <p class="font-bold text-white text-xs">Petugas Ronda</p>
+                <p id="current-user-email" class="text-[10px] text-emerald-400 truncate mt-0.5">ronda-ku@gmail.com</p>
+              </div>
+              <button onclick="showToast('Membuka menu Ganti Password...'); toggleProfileDropdown();" class="w-full text-left px-4 py-2.5 text-slate-200 hover:bg-slate-700/60 flex items-center space-x-2.5 transition">
+                <i class="fa-solid fa-key text-amber-400 w-4 text-center"></i>
+                <span>Ganti Password</span>
+              </button>
+              <button onclick="logoutApp()" class="w-full text-left px-4 py-2.5 text-red-400 hover:bg-slate-700/60 flex items-center space-x-2.5 transition">
+                <i class="fa-solid fa-right-from-bracket w-4 text-center"></i>
+                <span>Keluar</span>
+              </button>
+            </div>
+          </div>
+          <!-- END PROFILE DROPDOWN -->
+
+        </div>
+      </div>
+    </header>
+
+    <!-- SCROLLABLE CONTENT AREA -->
+    <main id="scrollable-content" class="flex-1 overflow-y-auto p-5 space-y-5 pb-28">
+      <!-- Konten dinamis -->
+    </main>
+
+    <!-- CURVED BOTTOM NAVIGATION BAR -->
+    <nav class="absolute bottom-0 left-0 right-0 bg-slate-800/90 backdrop-blur-md border-t border-slate-700/50 px-6 py-2.5 flex items-center justify-between z-30 shadow-2xl">
+      <!-- Menu Kiri: Beranda -->
+      <button id="nav-home" onclick="loadPage('home')" class="flex flex-col items-center text-emerald-400 space-y-1 transition">
+        <i class="fa-solid fa-house text-lg"></i>
+        <span class="text-[10px] font-medium">Beranda</span>
+      </button>
+      
+      <!-- Menu Kiri: Jadwal -->
+      <button id="nav-jadwal" onclick="loadPage('jadwal')" class="flex flex-col items-center text-slate-400 space-y-1 transition hover:text-white mr-6">
+        <i class="fa-solid fa-calendar-days text-lg"></i>
+        <span class="text-[10px] font-medium">Jadwal</span>
+      </button>
+
+      <!-- Tombol Scan QR Tengah (Telah diperbarui memanggil loadPage('scan')) -->
+      <div class="absolute left-1/2 -top-5 transform -translate-x-1/2">
+        <button onclick="loadPage('scan')" class="w-14 h-14 bg-gradient-to-tr from-emerald-600 to-teal-400 text-white rounded-full shadow-lg shadow-emerald-500/50 flex items-center justify-center text-xl ring-4 ring-slate-900 transition transform hover:scale-105 active:scale-95 cursor-pointer" title="Scan QR Pos">
+          <i class="fa-solid fa-qrcode"></i>
+        </button>
+      </div>
+
+      <!-- Menu Kanan: Laporan -->
+      <button id="nav-laporan" onclick="loadPage('laporan')" class="flex flex-col items-center text-slate-400 space-y-1 transition hover:text-white ml-6">
+        <i class="fa-solid fa-clipboard-list text-lg"></i>
+        <span class="text-[10px] font-medium">Laporan</span>
+      </button>
+
+      <!-- Menu Kanan: Setting dengan Option Menu Pop-up -->
+      <div class="relative">
+        <div id="option-menu-popup" class="hidden absolute bottom-14 right-0 w-52 bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl py-2 z-50 text-sm overflow-hidden">
+          <div class="bg-purple-600 text-white px-4 py-2 font-bold text-xs tracking-wider uppercase mb-1 flex items-center justify-between">
+            <span>OPTION MENU</span>
+            <i class="fa-solid fa-bars text-xs"></i>
+          </div>
+          
+          <button onclick="loadPage('pengaturan'); toggleOptionMenu();" class="w-full text-left px-4 py-2.5 text-slate-200 hover:bg-slate-700/60 flex items-center space-x-3 transition">
+            <i class="fa-solid fa-gear text-purple-400 w-4 text-center"></i>
+            <span>Pengaturan</span>
+          </button>
+          
+          <!-- Tombol Setting User -->
+          <button onclick="loadPage('tambah-user'); toggleOptionMenu();" class="w-full text-left px-4 py-2.5 text-slate-200 hover:bg-slate-700/60 flex items-center space-x-3 transition">
+            <i class="fa-solid fa-user-gear text-purple-400 w-4 text-center"></i>
+            <span>Setting User</span>
+          </button>
+          
+          <!-- Tombol Hak Akses -->
+          <button onclick="loadPage('hak-akses'); toggleOptionMenu();" class="w-full text-left px-4 py-2.5 text-slate-200 hover:bg-slate-700/60 flex items-center space-x-3 transition">
+            <i class="fa-solid fa-shield-halved text-purple-400 w-4 text-center"></i>
+            <span>Hak Akses</span>
+          </button>
+
+          <div class="border-t border-slate-700/60 my-1"></div>
+          <button onclick="showToast('Memproses Backup Data...'); toggleOptionMenu();" class="w-full text-left px-4 py-2.5 text-slate-200 hover:bg-slate-700/60 flex items-center space-x-3 transition">
+            <i class="fa-solid fa-database text-purple-400 w-4 text-center"></i>
+            <span>Backup</span>
+          </button>
+          <button onclick="showToast('Memproses Restore Data...'); toggleOptionMenu();" class="w-full text-left px-4 py-2.5 text-slate-200 hover:bg-slate-700/60 flex items-center space-x-3 transition">
+            <i class="fa-solid fa-rotate-left text-purple-400 w-4 text-center"></i>
+            <span>Restore</span>
+          </button>
+          <div class="border-t border-slate-700/60 my-1"></div>
+          <button onclick="logoutApp(); toggleOptionMenu();" class="w-full text-left px-4 py-2.5 text-red-400 hover:bg-slate-700/60 flex items-center space-x-3 transition">
+            <i class="fa-solid fa-right-from-bracket text-red-400 w-4 text-center"></i>
+            <span>Keluar</span>
+          </button>
+        </div>
+
+        <button id="nav-setting" onclick="toggleOptionMenu()" class="flex flex-col items-center text-slate-400 space-y-1 transition hover:text-white focus:outline-none">
+          <i class="fa-solid fa-gear text-lg"></i>
+          <span class="text-[10px] font-medium">Setting</span>
+        </button>
+      </div>
+    </nav>
+
+  </div>
+
+  <!-- Skrip JavaScript Global -->
+  <script>
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+
+      const toast = document.createElement('div');
+      
+      let icon = 'fa-circle-check text-emerald-400';
+      let borderColor = 'border-emerald-500/30';
+      let bgColor = 'bg-slate-800/95';
+
+      if (type === 'error') {
+        icon = 'fa-circle-exclamation text-red-400';
+        borderColor = 'border-red-500/30';
+      } else if (type === 'warning') {
+        icon = 'fa-triangle-exclamation text-amber-400';
+        borderColor = 'border-amber-500/30';
+      }
+
+      toast.className = `pointer-events-auto flex items-center space-x-3 px-4 py-3.5 rounded-2xl shadow-2xl backdrop-blur-md border ${borderColor} ${bgColor} text-white text-xs font-medium transform -translate-y-5 opacity-0 transition-all duration-300 ease-out`;
+      
+      toast.innerHTML = `
+        <i class="fa-solid ${icon} text-base shrink-0"></i>
+        <span class="flex-1 leading-relaxed">${message}</span>
+      `;
+
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.classList.remove('-translate-y-5', 'opacity-0');
+      }, 10);
+
+      setTimeout(() => {
+        toast.classList.add('-translate-y-5', 'opacity-0');
+        setTimeout(() => {
+          toast.remove();
+        }, 300);
+      }, 3000);
+    }
+
+    // Fungsi Smooth Logout Modal
+    function logoutApp() {
+      const modal = document.getElementById('custom-logout-modal');
+      const card = document.getElementById('logout-modal-card');
+      if (!modal || !card) return;
+
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        card.classList.remove('scale-90');
+        card.classList.add('scale-100');
+      }, 10);
+    }
+
+    function closeLogoutModal() {
+      const modal = document.getElementById('custom-logout-modal');
+      const card = document.getElementById('logout-modal-card');
+      if (!modal || !card) return;
+
+      modal.classList.add('opacity-0');
+      card.classList.remove('scale-100');
+      card.classList.add('scale-90');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+      }, 300);
+    }
+
+    function executeLogout() {
+      closeLogoutModal();
+      
+      const overlay = document.getElementById('logout-transition-overlay');
+      const statusText = document.getElementById('logout-status-text');
+      if (!overlay) return;
+
+      overlay.classList.remove('invisible');
+      overlay.classList.remove('opacity-0');
+
+      setTimeout(() => {
+        if (statusText) statusText.innerText = "Menghapus Sesi Aktif...";
+        localStorage.removeItem('ronda_logged_in');
+        localStorage.removeItem('ronda_user');
+      }, 600);
+
+      setTimeout(() => {
+        if (statusText) statusText.innerText = "Sampai Jumpa, Petugas!";
+      }, 1300);
+
+      setTimeout(() => {
+        window.location.href = 'login.html';
+      }, 1800);
+    }
+
+    function toggleProfileDropdown() {
+      const dropdown = document.getElementById('profile-dropdown');
+      dropdown.classList.toggle('hidden');
+    }
+
+    function toggleOptionMenu() {
+      const popup = document.getElementById('option-menu-popup');
+      if (popup) {
+        popup.classList.toggle('hidden');
+      }
+    }
+
+    window.addEventListener('click', function(e) {
+      const profileBtn = document.getElementById('profile-btn');
+      const profileDropdown = document.getElementById('profile-dropdown');
+      if (profileBtn && profileDropdown && !profileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
+        profileDropdown.classList.add('hidden');
+      }
+
+      const settingBtn = document.getElementById('nav-setting');
+      const optionMenu = document.getElementById('option-menu-popup');
+      if (settingBtn && optionMenu && !settingBtn.contains(e.target) && !optionMenu.contains(e.target)) {
+        optionMenu.classList.add('hidden');
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedUser = localStorage.getItem('ronda_user');
+      const emailEl = document.getElementById('current-user-email');
+      if (savedUser && emailEl) {
+        emailEl.innerText = savedUser;
+      }
+      // Muat halaman awal 'home' secara otomatis saat pertama kali dibuka
+      if (typeof loadPage === 'function') {
+        loadPage('home');
+      }
+    });
+  </script>
+
+  <!-- Firebase SDKs -->
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"></script>
+  
+  <!-- Custom JS -->
+  <script type="module" src="assets/js/firebase-config.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<div class="space-y-5 pb-24">
+  <!-- Greeting Banner -->
+  <div>
+    <h1 id="greeting-text" class="text-xl font-bold text-white">Selamat sore, Petugas Ronda</h1>
+    <p class="text-sm text-slate-400 mt-0.5"><span id="date-text">Sabtu Kliwon, 17 Oktober 2026</span> &bull; <span id="time-text" class="text-emerald-400 font-medium">15:08 WIB</span></p>
+  </div>
+
+  <!-- Info Header Card -->
+  <div class="bg-gradient-to-r from-emerald-600 to-teal-500 p-5 rounded-3xl shadow-lg shadow-emerald-500/20 text-white relative overflow-hidden flex items-center justify-between">
+    <div>
+      <div class="flex items-center space-x-2 bg-white/20 w-fit px-3 py-1 rounded-full text-xs font-semibold mb-2 backdrop-blur-sm">
+        <i class="fa-solid fa-calendar-days"></i>
+        <span>Jadwal Keseluruhan Regu Jaga</span>
+      </div>
+      <h2 class="text-lg font-bold">Daftar Putaran Ronda RT 04</h2>
+      <p class="text-xs text-white/80 mt-1">Seluruh regu jaga berdasarkan pasaran</p>
+    </div>
+    <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-2xl backdrop-blur-sm">
+      <i class="fa-solid fa-shield-halved"></i>
+    </div>
+  </div>
+
+  <!-- Daftar Keseluruhan Jadwal (Read-Only) -->
+  <div class="space-y-3">
+    <div class="flex items-center justify-between">
+      <h3 class="font-bold text-sm text-white">Semua Regu &amp; Petugas</h3>
+      <span id="total-regu-badge" class="text-xs text-emerald-400 font-medium">Memuat...</span>
+    </div>
+
+    <!-- Container Daftar Keseluruhan Jadwal -->
+    <div id="all-jadwal-container" class="space-y-3">
+      <div class="bg-slate-800/60 border border-slate-800 p-5 rounded-2xl text-center">
+        <p class="text-xs text-slate-400">Memuat seluruh data jadwal dari database...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Keterangan Jalur & Pos -->
+  <div class="bg-slate-800/50 border border-slate-800 p-5 rounded-3xl space-y-3">
+    <div class="flex items-center space-x-2.5 text-emerald-400">
+      <i class="fa-solid fa-route text-lg"></i>
+      <h3 class="font-bold text-sm text-white">Ketentuan Putaran Patroli</h3>
+    </div>
+    <p class="text-xs text-slate-300 leading-relaxed">
+      Petugas wajib melakukan patroli keliling wilayah RT 04 setiap 2 jam sekali melewati Pos 1 hingga Pos 4 secara berurutan, serta melakukan pemindaian QR Code di setiap titik pos.
+    </p>
+  </div>
+</div>
+
+<!-- SCRIPT CLOCK & PEMUAT SEMUA JADWAL -->
+<script>
+  (function() {
+    const now = new Date();
+    
+    function getJawaPasaranLocal(date) {
+      const pasaranList = ['Pon', 'Wage', 'Kliwon', 'Legi', 'Pahing'];
+      const acuan = new Date(2000, 0, 1);
+      const selisihHari = Math.floor((date - acuan) / (1000 * 60 * 60 * 24));
+      let indexPasaran = (selisihHari % 5);
+      if (indexPasaran < 0) indexPasaran += 5;
+      return pasaranList[indexPasaran];
+    }
+
+    const currentPasaran = getJawaPasaranLocal(now);
+    const optionsDate = { day: 'numeric', month: 'long', year: 'numeric' };
+    const restDate = now.toLocaleDateString('id-ID', optionsDate);
+    const dayName = now.toLocaleDateString('id-ID', { weekday: 'long' });
+    const finalDateStr = `${dayName} ${currentPasaran}, ${restDate}`;
+    
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const formattedTime = `${hours}:${minutes} WIB`;
+    
+    const hourNum = now.getHours();
+    let greeting = "Selamat malam";
+    if (hourNum >= 3 && hourNum < 11) greeting = "Selamat pagi";
+    else if (hourNum >= 11 && hourNum < 15) greeting = "Selamat siang";
+    else if (hourNum >= 15 && hourNum < 18) greeting = "Selamat sore";
+
+    const gEl = document.getElementById('greeting-text');
+    const dEl = document.getElementById('date-text');
+    const tEl = document.getElementById('time-text');
+    if(gEl) gEl.innerText = `${greeting}, Petugas Ronda`;
+    if(dEl) dEl.innerText = finalDateStr;
+    if(tEl) tEl.innerText = formattedTime;
+
+    // Panggil fungsi pemuat seluruh jadwal
+    if (typeof window.loadAllJadwalPageData === 'function') {
+      window.loadAllJadwalPageData();
+    }
+  })();
+</script>
