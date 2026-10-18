@@ -166,7 +166,7 @@
   let scannedWargaData = null;
   let cachedNilaiJimpitan = "1.000";
   let allWargaCache = [];
-  let html5QrCode = null;
+  let html5QrCodeInstance = null;
   let isFlashOn = false;
 
   // Ambil besaran jimpitan dari pengaturan database saat halaman dimuat
@@ -185,12 +185,26 @@
   }
   fetchNilaiJimpitanConfig();
 
-  // Inisialisasi dan Menyalakan Kamera Scanner
+  // Inisialisasi dan Menyalakan Kamera Scanner dengan Aman
   async function startScanner() {
     const placeholder = document.getElementById('scanner-placeholder');
+    const readerElement = document.getElementById('reader');
     
+    if (!readerElement) return;
+
+    // Bersihkan instance kamera sebelumnya jika ada yang menggantung
+    if (html5QrCodeInstance) {
+      try {
+        await html5QrCodeInstance.stop();
+        html5QrCodeInstance.clear();
+      } catch (e) {
+        console.log("Instance lama sudah dihentikan.");
+      }
+      html5QrCodeInstance = null;
+    }
+
     try {
-      html5QrCode = new Html5Qrcode("reader");
+      html5QrCodeInstance = new Html5Qrcode("reader");
       
       const config = { 
         fps: 10, 
@@ -198,7 +212,7 @@
         aspectRatio: 1.0
       };
 
-      await html5QrCode.start(
+      await html5QrCodeInstance.start(
         { facingMode: "environment" }, 
         config,
         (decodedText, decodedResult) => {
@@ -229,12 +243,12 @@
 
   // Kontrol Senter / Flash
   window.toggleFlashlight = async function() {
-    if (!html5QrCode) return;
+    if (!html5QrCodeInstance) return;
     try {
-      const capabilities = html5QrCode.getRunningTrackCameraCapabilities();
+      const capabilities = html5QrCodeInstance.getRunningTrackCameraCapabilities();
       if (capabilities.torch !== undefined) {
         isFlashOn = !isFlashOn;
-        await html5QrCode.applyVideoConstraints({
+        await html5QrCodeInstance.applyVideoConstraints({
           advanced: [{ torch: isFlashOn }]
         });
         if (typeof window.showToast === 'function') {
@@ -642,9 +656,9 @@
     }
   };
 
-  // Jalankan scanner kamera saat halaman dimuat
-  window.addEventListener('DOMContentLoaded', () => {
-    setTimeout(startScanner, 400);
+  // Inisialisasi langsung saat skrip dieksekusi agar kamera langsung menyala
+  setTimeout(() => {
+    startScanner();
     window.loadScanHistory();
-  });
+  }, 300);
 </script>
