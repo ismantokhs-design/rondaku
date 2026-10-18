@@ -241,7 +241,6 @@
       const querySnapshot = await getDocs(q);
 
       if (querySnapshot.empty) {
-        // NOTIFIKASI JIKA BARCODE TIDAK ADA DI DATA WARGA
         if (typeof window.showToast === 'function') {
           window.showToast(`Peringatan: Barcode / No. KK "${cleanCode}" tidak ditemukan di dalam data warga!`, "error");
         }
