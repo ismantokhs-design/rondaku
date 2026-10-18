@@ -21,7 +21,6 @@ window.loadPage = async function(pageName) {
       if (typeof window.loadHomeJimpitanSummary === 'function') {
         window.loadHomeJimpitanSummary();
       }
-      // Mulai jalankan jam real-time khusus halaman Home
       if (typeof window.initHomeRealTimeClock === 'function') {
         window.initHomeRealTimeClock();
       }
@@ -1565,7 +1564,6 @@ window.loadPeraturanToHome = async function() {
   }
 };
 
-// Fungsi Rekapitulasi Jimpitan Hari Ini untuk Halaman Home
 window.loadHomeJimpitanSummary = async function() {
   const totalNominalEl = document.getElementById('stat-total-nominal');
   const scannedCountEl = document.getElementById('stat-scanned-count');
@@ -2121,12 +2119,10 @@ window.initHomeRealTimeClock = function() {
   function updateClock() {
     const now = new Date();
     
-    // Format Tanggal & Hari
     const optionsDate = { day: 'numeric', month: 'long', year: 'numeric' };
     const restDate = now.toLocaleDateString('id-ID', optionsDate);
     const dayName = now.toLocaleDateString('id-ID', { weekday: 'long' });
     
-    // Perhitungan Pasaran Jawa Otomatis
     function getJawaPasaran(date) {
       const pasaranList = ['Pon', 'Wage', 'Kliwon', 'Legi', 'Pahing'];
       const acuan = new Date(2000, 0, 1);
@@ -2138,12 +2134,10 @@ window.initHomeRealTimeClock = function() {
 
     const finalDateStr = `${dayName} ${getJawaPasaran(now)}, ${restDate}`;
     
-    // Format Jam Menit
     const hours = String(now.getHours()).padStart(2, '0');
     const minutes = String(now.getMinutes()).padStart(2, '0');
     const formattedTime = `${hours}:${minutes} WIB`;
     
-    // Penentuan Ucapan Otomatis Berdasarkan Waktu
     const hourNum = now.getHours();
     let greeting = "Selamat malam";
     if (hourNum >= 3 && hourNum < 11) {
@@ -2154,7 +2148,6 @@ window.initHomeRealTimeClock = function() {
       greeting = "Selamat sore";
     }
 
-    // Tangkap elemen di DOM
     const gEl = document.getElementById('greeting-text');
     const dEl = document.getElementById('date-text');
     const tEl = document.getElementById('time-text');
@@ -2164,12 +2157,78 @@ window.initHomeRealTimeClock = function() {
     if (tEl) tEl.innerText = formattedTime;
   }
 
-  // Jalankan langsung
   updateClock();
 
-  // Set interval agar berjalan tiap 1 detik
   if (window._realTimeClockInterval) {
     clearInterval(window._realTimeClockInterval);
   }
   window._realTimeClockInterval = setInterval(updateClock, 1000);
+};
+
+// ==========================================
+// 21. FUNGSI KAMERA QR SCANNER (HTML5 QRCODE)
+// ==========================================
+let html5QrCodeScanner = null;
+
+window.openScannerModal = async function() {
+  const modal = document.getElementById('scanner-modal');
+  const card = document.getElementById('scanner-card');
+  
+  if (modal) {
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+      modal.classList.remove('opacity-0');
+      if (card) {
+        card.classList.remove('scale-95');
+        card.classList.add('scale-100');
+      }
+    }, 10);
+  }
+
+  setTimeout(async () => {
+    try {
+      if (!html5QrCodeScanner) {
+        html5QrCodeScanner = new Html5Qrcode("reader");
+      }
+      if (!html5QrCodeScanner.isScanning) {
+        await html5QrCodeScanner.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: { width: 220, height: 220 } },
+          (decodedText) => {
+            window.closeScannerModal();
+            window.handleQRCodeScanned(decodedText);
+          },
+          (err) => {}
+        );
+      }
+    } catch (err) {
+      console.error("Gagal membuka kamera:", err);
+      if (typeof window.showToast === 'function') {
+        window.showToast("Gagal membuka kamera perangkat. Pastikan izin kamera aktif.", "error");
+      }
+    }
+  }, 300);
+};
+
+window.closeScannerModal = async function() {
+  if (html5QrCodeScanner) {
+    try {
+      if (html5QrCodeScanner.isScanning) {
+        await html5QrCodeScanner.stop();
+      }
+    } catch (e) {
+      console.error("Gagal menghentikan scanner:", e);
+    }
+  }
+
+  const modal = document.getElementById('scanner-modal');
+  const card = document.getElementById('scanner-card');
+  if (modal && card) {
+    modal.classList.add('opacity-0');
+    card.classList.remove('scale-100');
+    card.classList.add('scale-95');
+    setTimeout(() => {
+      modal.classList.add('hidden');
+    }, 300);
+  }
 };

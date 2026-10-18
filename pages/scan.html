@@ -2,52 +2,33 @@
   <!-- Greeting & Tombol Kembali -->
   <div class="flex items-center justify-between">
     <div>
-      <h1 class="text-xl font-bold text-white">Scan Barcode / QR Warga</h1>
-      <p class="text-sm text-slate-400 mt-0.5">Aktifkan kamera atau pilih data warga secara manual</p>
+      <h1 class="text-xl font-bold text-white">Scan Barcode Warga</h1>
+      <p class="text-sm text-slate-400 mt-0.5">Pencatatan kehadiran dan jimpitan ronda</p>
     </div>
     <button onclick="loadPage('home')" class="w-10 h-10 bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-300 rounded-2xl flex items-center justify-center transition shadow-md cursor-pointer shrink-0 ml-3" title="Kembali ke Beranda">
       <i class="fa-solid fa-arrow-left text-sm"></i>
     </button>
   </div>
 
-  <!-- Scanner Viewfinder Box & Tombol Aktivasi Kamera -->
-  <div class="bg-slate-800/60 border border-slate-800 p-5 rounded-3xl space-y-4 text-center">
-    <div class="relative w-full aspect-square max-w-sm mx-auto bg-slate-900 border-2 border-dashed border-purple-500/60 rounded-3xl overflow-hidden flex flex-col items-center justify-center shadow-inner">
-      
-      <!-- Area Render Kamera / Hasil Scan -->
-      <div id="reader" class="absolute inset-0 w-full h-full object-cover"></div>
-
-      <!-- Tombol Aktifkan Kamera (Muncul saat kamera belum menyala) -->
-      <div id="scanner-placeholder" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/95 z-20 p-6 space-y-3">
-        <div class="w-16 h-16 bg-purple-600/20 text-purple-400 rounded-2xl flex items-center justify-center text-2xl border border-purple-500/30 shadow-lg">
-          <i class="fa-solid fa-camera"></i>
+  <!-- Form Input Cepat / Tombol Pemicu Modal Kamera -->
+  <div class="bg-slate-800/60 border border-slate-800 p-5 rounded-3xl space-y-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-xs font-medium text-slate-400 mb-1.5">No. KK / Barcode Warga</label>
+        <div class="flex space-x-2">
+          <input type="text" id="manual-input-code" placeholder="Scan/ketik barcode lalu Enter..." class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-purple-500 placeholder-slate-500 font-mono">
+          <button type="button" onclick="window.openScannerModal()" class="w-11 h-10 bg-purple-600 hover:bg-purple-500 text-white rounded-xl flex items-center justify-center transition shadow-lg shadow-purple-600/30 cursor-pointer shrink-0" title="Buka Kamera Scanner">
+            <i class="fa-solid fa-camera text-sm"></i>
+          </button>
         </div>
-        <div>
-          <h3 class="font-bold text-sm text-white">Kamera Belum Aktif</h3>
-          <p class="text-[11px] text-slate-400 mt-0.5">Tekan tombol di bawah untuk meminta izin dan menyalakan kamera perangkat.</p>
-        </div>
-        <!-- Tombol Interaktif Asli untuk Mengaktifkan Kamera -->
-        <button type="button" onclick="window.initAndStartCamera()" class="bg-purple-600 hover:bg-purple-500 text-white font-bold py-2.5 px-5 rounded-xl text-xs shadow-lg shadow-purple-600/30 transition cursor-pointer flex items-center space-x-2">
-          <i class="fa-solid fa-power-off"></i>
-          <span>Aktifkan Kamera</span>
-        </button>
-      </div>
-
-      <!-- Bingkai Target Laser Animasi -->
-      <div class="absolute inset-8 border border-purple-500/30 rounded-2xl pointer-events-none flex items-center justify-center z-10">
-        <div class="w-full h-0.5 bg-gradient-to-r from-transparent via-purple-500 to-transparent animate-bounce"></div>
       </div>
     </div>
 
-    <p class="text-xs text-slate-400 px-4">
-      Pindai kode pada kartu warga atau pos ronda untuk mencatat kehadiran dan jimpitan secara otomatis.
-    </p>
-
-    <!-- Tombol Alternatif / Input Manual -->
-    <div class="flex items-center justify-center space-x-3 pt-2">
-      <button onclick="window.openManualScanModal()" class="w-full bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 text-xs font-semibold py-3 px-6 rounded-2xl border border-purple-500/30 transition flex items-center justify-center space-x-2 cursor-pointer">
-        <i class="fa-solid fa-keyboard"></i>
-        <span>Cari No. KK / Pilih Manual</span>
+    <!-- Tombol Alternatif Pilih Manual -->
+    <div class="pt-2">
+      <button onclick="window.openManualScanModal()" class="w-full bg-slate-900/80 hover:bg-slate-700/80 text-purple-300 font-semibold py-3 px-4 rounded-xl border border-purple-500/30 transition flex items-center justify-center space-x-2 cursor-pointer text-xs">
+        <i class="fa-solid fa-users"></i>
+        <span>Pilih Kepala Keluarga dari Daftar Warga</span>
       </button>
     </div>
   </div>
@@ -72,7 +53,34 @@
   </div>
 </div>
 
-<!-- MODAL KONFIRMASI JIMPITAN WARGA (PASANG / TIDAK) -->
+<!-- POP-UP MODAL SCANNER KAMERA BARCODE -->
+<div id="scanner-modal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+  <div id="scanner-card" class="bg-white text-slate-900 w-full max-w-sm rounded-3xl p-5 shadow-2xl space-y-4 transform scale-95 transition-transform duration-300">
+    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+      <h3 class="font-bold text-sm text-slate-800">Scanner Kamera Barcode</h3>
+      <button onclick="window.closeScannerModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition cursor-pointer">
+        <i class="fa-solid fa-xmark text-sm"></i>
+      </button>
+    </div>
+
+    <div class="relative w-full aspect-square bg-black rounded-2xl overflow-hidden shadow-inner flex items-center justify-center">
+      <div id="reader" class="absolute inset-0 w-full h-full object-cover"></div>
+      <div class="absolute inset-8 border-2 border-emerald-400 rounded-xl pointer-events-none flex items-center justify-center z-10 shadow-[0_0_15px_rgba(52,211,153,0.5)]">
+        <div class="w-full h-0.5 bg-emerald-400/80 animate-pulse"></div>
+      </div>
+    </div>
+
+    <p class="text-center text-[11px] text-slate-500 px-2">
+      Posisikan barcode di dalam kotak kamera.
+    </p>
+
+    <button onclick="window.closeScannerModal()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 rounded-xl text-xs transition border border-slate-200 cursor-pointer">
+      Batalkan
+    </button>
+  </div>
+</div>
+
+<!-- MODAL KONFIRMASI JIMPITAN WARGA -->
 <div id="jimpitan-confirm-modal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300">
   <div id="jimpitan-confirm-card" class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-6 shadow-2xl transform scale-95 transition-transform duration-300 space-y-4">
     <div class="text-center space-y-2">
@@ -137,7 +145,7 @@
   </div>
 </div>
 
-<!-- MODAL PILIH WARGA MANUAL (DAFTAR NAMA WARGA) -->
+<!-- MODAL PILIH WARGA MANUAL -->
 <div id="manual-scan-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300">
   <div id="manual-scan-card" class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 shadow-2xl transform scale-95 transition-transform duration-300 space-y-4 flex flex-col max-h-[85vh]">
     <div class="flex items-center justify-between border-b border-slate-800 pb-3 shrink-0">
@@ -150,449 +158,25 @@
       </button>
     </div>
 
-    <!-- Kolom Pencarian Cepat Nama / No KK -->
     <div class="shrink-0">
       <input type="text" id="search-warga-input" oninput="window.filterWargaList()" placeholder="Cari nama kepala keluarga atau No. KK..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-purple-500 placeholder-slate-500">
     </div>
 
-    <!-- Container Daftar Nama Warga (Scrollable) -->
     <div id="manual-warga-list-container" class="flex-1 overflow-y-auto space-y-2 pr-1">
       <div class="text-center py-6 text-xs text-slate-400">Memuat daftar warga dari database...</div>
     </div>
   </div>
 </div>
 
-<!-- PUSTAKA HTML5 QR CODE SCANNER -->
-<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-
-<!-- SKRIP KONTROL KAMERA DAN DATABASE -->
+<!-- Script Tambahan Khusus Halaman Scan untuk Input Manual via Enter -->
 <script>
-  let scannedWargaData = null;
-  let cachedNilaiJimpitan = "1.000";
-  let allWargaCache = [];
-  let html5QrCodeScanner = null;
-
-  // Ambil konfigurasi jimpitan
-  async function fetchNilaiJimpitanConfig() {
-    try {
-      const { db } = await import('./db.js');
-      const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
-      const docSnap = await getDoc(doc(db, "settings", "wilayah"));
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        cachedNilaiJimpitan = data.nilaiJimpitan || "1.000";
-      }
-    } catch (err) {
-      console.error("Gagal memuat konfigurasi jimpitan:", err);
-    }
-  }
-  fetchNilaiJimpitanConfig();
-
-  // Fungsi yang dipanggil saat tombol "Aktifkan Kamera" diklik secara manual
-  window.initAndStartCamera = async function() {
-    const placeholder = document.getElementById('scanner-placeholder');
-    const readerEl = document.getElementById('reader');
-    if (!readerEl) return;
-
-    if (placeholder) {
-      placeholder.innerHTML = `
-        <div class="space-y-2 text-purple-400 p-4 text-center">
-          <i class="fa-solid fa-spinner fa-spin text-3xl"></i>
-          <p class="text-xs">Meminta izin & menyalakan kamera...</p>
-        </div>
-      `;
-    }
-
-    if (html5QrCodeScanner) {
-      try {
-        await html5QrCodeScanner.stop();
-        html5QrCodeScanner.clear();
-      } catch (e) {}
-      html5QrCodeScanner = null;
-    }
-
-    try {
-      html5QrCodeScanner = new Html5Qrcode("reader");
-      const config = { fps: 10, qrbox: { width: 250, height: 250 } };
-
-      await html5QrCodeScanner.start(
-        { facingMode: "environment" },
-        config,
-        (decodedText) => {
-          if (decodedText) {
-            window.handleScannedCode(decodedText);
-          }
-        },
-        (errorMessage) => {
-          // Abaikan frame scan error
-        }
-      );
-
-      // Jika berhasil menyala, sembunyikan placeholder
-      if (placeholder) {
-        placeholder.style.display = 'none';
-      }
-    } catch (err) {
-      console.error("Gagal menyalakan kamera:", err);
-      if (placeholder) {
-        placeholder.innerHTML = `
-          <div class="space-y-2 text-rose-400 p-4 text-center">
-            <i class="fa-solid fa-triangle-exclamation text-3xl"></i>
-            <p class="text-xs font-bold">Izin Kamera Ditolak / Gagal Diakses</p>
-            <p class="text-[10px]">Pastikan izin kamera di browser diaktifkan atau gunakan tombol Cari No. KK di bawah.</p>
-            <button type="button" onclick="window.initAndStartCamera()" class="mt-2 bg-slate-800 hover:bg-slate-700 text-white py-1.5 px-3 rounded-lg text-[10px] font-semibold border border-slate-700 cursor-pointer">
-              Coba Lagi
-            </button>
-          </div>
-        `;
+  document.getElementById('manual-input-code')?.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      const code = this.value.trim();
+      if (code && typeof window.handleQRCodeScanned === 'function') {
+        window.handleQRCodeScanned(code);
+        this.value = ''; // Kosongkan input setelah diproses
       }
     }
-  };
-
-  // Handle kode hasil scan / pencarian dengan Peringatan jika tidak terdaftar
-  window.handleScannedCode = async function(codeText) {
-    const cleanCode = String(codeText).trim();
-    if (!cleanCode) return;
-
-    try {
-      const { db } = await import('./db.js');
-      const { collection, getDocs, query, where } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
-
-      // Cek apakah kode barcode / No KK terdaftar di koleksi "warga"
-      const q = query(collection(db, "warga"), where("nokk", "==", cleanCode));
-      const querySnapshot = await getDocs(q);
-
-      if (querySnapshot.empty) {
-        if (typeof window.showToast === 'function') {
-          window.showToast(`Peringatan: Barcode / No. KK "${cleanCode}" tidak ditemukan di dalam data warga!`, "error");
-        }
-        return;
-      }
-
-      // Cek duplikasi absensi hari ini
-      const todayStr = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
-      const historyQuery = query(collection(db, "scan_history"), where("nokk", "==", cleanCode));
-      const historySnapshot = await getDocs(historyQuery);
-
-      let alreadyRecordedToday = false;
-      historySnapshot.forEach((docSnap) => {
-        const data = docSnap.data();
-        if (data.waktu && data.waktu.includes(todayStr)) {
-          alreadyRecordedToday = true;
-        }
-      });
-
-      if (alreadyRecordedToday) {
-        if (typeof window.showToast === 'function') {
-          window.showToast(`Warga dengan No. KK "${cleanCode}" sudah diabsen hari ini!`, "warning");
-        }
-        return;
-      }
-
-      const docSnap = querySnapshot.docs[0];
-      scannedWargaData = {
-        id: docSnap.id,
-        ...docSnap.data()
-      };
-
-      // Jeda scanner sementara saat modal konfirmasi terbuka
-      if (html5QrCodeScanner) {
-        try { await html5QrCodeScanner.pause(); } catch(e) {}
-      }
-
-      window.openJimpitanConfirmModal();
-    } catch (err) {
-      console.error("Gagal mencocokkan kode:", err);
-      if (typeof window.showToast === 'function') {
-        window.showToast("Terjadi kesalahan saat mencocokkan data warga.", "error");
-      }
-    }
-  };
-
-  // Kontrol Modal Konfirmasi Jimpitan
-  window.openJimpitanConfirmModal = function() {
-    if (!scannedWargaData) return;
-
-    const modal = document.getElementById('jimpitan-confirm-modal');
-    const card = document.getElementById('jimpitan-confirm-card');
-    const namaEl = document.getElementById('modal-nama-kk');
-    const nokkEl = document.getElementById('modal-nokk');
-    const nominalEl = document.getElementById('modal-info-nominal');
-
-    if (namaEl) namaEl.innerText = scannedWargaData.namakk || 'Tanpa Nama';
-    if (nokkEl) nokkEl.innerText = `No. KK: ${scannedWargaData.nokk || '-'}`;
-    if (nominalEl) nominalEl.innerText = `Nominal Jimpitan: Rp ${cachedNilaiJimpitan}`;
-
-    if (modal) {
-      modal.classList.remove('hidden');
-      setTimeout(() => {
-        modal.classList.remove('opacity-0');
-        if (card) {
-          card.classList.remove('scale-95');
-          card.classList.add('scale-100');
-        }
-      }, 10);
-    }
-  };
-
-  window.closeJimpitanConfirmModal = async function() {
-    const modal = document.getElementById('jimpitan-confirm-modal');
-    const card = document.getElementById('jimpitan-confirm-card');
-    if (modal && card) {
-      modal.classList.add('opacity-0');
-      card.classList.remove('scale-100');
-      card.classList.add('scale-95');
-      setTimeout(async () => {
-        modal.classList.add('hidden');
-        scannedWargaData = null;
-        if (html5QrCodeScanner) {
-          try { await html5QrCodeScanner.resume(); } catch(e) {}
-        }
-      }, 300);
-    }
-  };
-
-  // Simpan hasil ke Firebase
-  window.submitJadwalJimpitan = async function(statusPilihan) {
-    if (!scannedWargaData) return;
-
-    const petugasName = localStorage.getItem('ronda_user') || 'Petugas Ronda';
-    const nominalNilai = statusPilihan === 'Pasang' ? cachedNilaiJimpitan : '0';
-
-    try {
-      const { db } = await import('./db.js');
-      const { collection, addDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
-
-      const now = new Date();
-      const timeStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0') + ' WIB';
-      const dateStr = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
-
-      await addDoc(collection(db, "scan_history"), {
-        nokk: scannedWargaData.nokk,
-        namakk: scannedWargaData.namakk,
-        statusJimpitan: statusPilihan,
-        nominal: nominalNilai,
-        petugas: petugasName,
-        waktu: `${dateStr} • ${timeStr}`,
-        createdAt: now.toISOString()
-      });
-
-      window.closeJimpitanConfirmModal();
-      if (typeof window.showToast === 'function') {
-        window.showToast(`Berhasil mencatat: ${scannedWargaData.namakk} (${statusPilihan})!`);
-      }
-      window.loadScanHistory();
-    } catch (err) {
-      console.error("Gagal menyimpan jimpitan:", err);
-      if (typeof window.showToast === 'function') {
-        window.showToast("Gagal menyimpan ke database: " + err.message, "error");
-      }
-    }
-  };
-
-  // Modal Edit Riwayat
-  window.openEditJimpitanModal = function(historyId, nama, nokk, currentStatus) {
-    document.getElementById('edit-history-id').value = historyId;
-    document.getElementById('edit-modal-nama').innerText = nama;
-    document.getElementById('edit-modal-nokk').innerText = nokk;
-    document.getElementById('edit-modal-status').value = currentStatus;
-
-    const modal = document.getElementById('edit-jimpitan-modal');
-    const card = document.getElementById('edit-jimpitan-card');
-    if (modal) {
-      modal.classList.remove('hidden');
-      setTimeout(() => {
-        modal.classList.remove('opacity-0');
-        if (card) { card.classList.remove('scale-95'); card.classList.add('scale-100'); }
-      }, 10);
-    }
-  };
-
-  window.closeEditJimpitanModal = function() {
-    const modal = document.getElementById('edit-jimpitan-modal');
-    const card = document.getElementById('edit-jimpitan-card');
-    if (modal && card) {
-      modal.classList.add('opacity-0');
-      card.classList.remove('scale-100');
-      card.classList.add('scale-95');
-      setTimeout(() => modal.classList.add('hidden'), 300);
-    }
-  };
-
-  window.submitUpdateJimpitan = async function() {
-    const historyId = document.getElementById('edit-history-id')?.value;
-    const newStatus = document.getElementById('edit-modal-status')?.value;
-    if (!historyId || !newStatus) return;
-
-    try {
-      const { db } = await import('./db.js');
-      const { doc, getDoc, updateDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
-
-      const docRef = doc(db, "scan_history", historyId);
-      const settingsSnap = await getDoc(doc(db, "settings", "wilayah"));
-      const nominalPasang = settingsSnap.exists() ? (settingsSnap.data().nilaiJimpitan || "1.000") : "1.000";
-      const nominalFinal = newStatus === 'Pasang' ? nominalPasang : '0';
-
-      await updateDoc(docRef, { statusJimpitan: newStatus, nominal: nominalFinal, updatedAt: new Date().toISOString() });
-
-      window.closeEditJimpitanModal();
-      if (typeof window.showToast === 'function') window.showToast("Status jimpitan berhasil diperbarui!");
-      window.loadScanHistory();
-    } catch (err) {
-      console.error("Gagal memperbarui:", err);
-    }
-  };
-
-  window.deleteScanHistory = async function(historyId, namaWarga) {
-    if (confirm(`Hapus catatan jimpitan untuk warga "${namaWarga}"?`)) {
-      try {
-        const { db } = await import('./db.js');
-        const { doc, deleteDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
-        await deleteDoc(doc(db, "scan_history", historyId));
-        if (typeof window.showToast === 'function') window.showToast(`Catatan dihapus.`);
-        window.loadScanHistory();
-      } catch (err) { console.error(err); }
-    }
-  };
-
-  // Modal Manual Warga
-  window.openManualScanModal = async function() {
-    if (html5QrCodeScanner) {
-      try { await html5QrCodeScanner.pause(); } catch(e) {}
-    }
-
-    const modal = document.getElementById('manual-scan-modal');
-    const card = document.getElementById('manual-scan-card');
-    const container = document.getElementById('manual-warga-list-container');
-    document.getElementById('search-warga-input').value = '';
-    container.innerHTML = `<div class="text-center py-6 text-xs text-slate-400">Memuat daftar warga...</div>`;
-
-    if (modal) {
-      modal.classList.remove('hidden');
-      setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); card.classList.add('scale-100'); }, 10);
-    }
-
-    try {
-      const { db } = await import('./db.js');
-      const { collection, getDocs } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
-      const querySnapshot = await getDocs(collection(db, "warga"));
-
-      allWargaCache = [];
-      querySnapshot.forEach((docSnap) => { allWargaCache.push({ id: docSnap.id, ...docSnap.data() }); });
-      window.renderWargaList(allWargaCache);
-    } catch (err) {
-      container.innerHTML = `<div class="text-center py-6 text-xs text-rose-400">Gagal memuat data warga.</div>`;
-    }
-  };
-
-  window.closeManualScanModal = async function() {
-    const modal = document.getElementById('manual-scan-modal');
-    const card = document.getElementById('manual-scan-card');
-    if (modal && card) {
-      modal.classList.add('opacity-0');
-      card.classList.remove('scale-100');
-      card.classList.add('scale-95');
-      setTimeout(async () => {
-        modal.classList.add('hidden');
-        if (html5QrCodeScanner) {
-          try { await html5QrCodeScanner.resume(); } catch(e) {}
-        }
-      }, 300);
-    }
-  };
-
-  window.renderWargaList = function(wargaArray) {
-    const container = document.getElementById('manual-warga-list-container');
-    if (!container) return;
-
-    if (wargaArray.length === 0) {
-      container.innerHTML = `<div class="text-center py-6 text-xs text-slate-400">Tidak ada data warga ditemukan.</div>`;
-      return;
-    }
-
-    let html = '';
-    wargaArray.forEach((warga) => {
-      const safeNoKK = String(warga.nokk || '').replace(/'/g, "\\'");
-      html += `
-        <button type="button" onclick="window.selectWargaManual('${safeNoKK}')" class="w-full text-left bg-slate-800/80 hover:bg-purple-600/25 border border-slate-700/60 p-3 rounded-2xl transition flex items-center justify-between cursor-pointer group">
-          <div>
-            <p class="font-bold text-xs text-white group-hover:text-purple-300">${warga.namakk || '-'}</p>
-            <p class="text-[10px] text-slate-400 font-mono mt-0.5">No. KK / Barcode: ${warga.nokk || '-'}</p>
-          </div>
-          <div class="w-7 h-7 bg-slate-700 group-hover:bg-purple-600 text-slate-300 group-hover:text-white rounded-xl flex items-center justify-center transition text-xs">
-            <i class="fa-solid fa-chevron-right text-[10px]"></i>
-          </div>
-        </button>
-      `;
-    });
-    container.innerHTML = html;
-  };
-
-  window.filterWargaList = function() {
-    const keyword = document.getElementById('search-warga-input')?.value.toLowerCase() || '';
-    const filtered = allWargaCache.filter(w => (w.namakk && w.namakk.toLowerCase().includes(keyword)) || (w.nokk && w.nokk.toLowerCase().includes(keyword)));
-    window.renderWargaList(filtered);
-  };
-
-  window.selectWargaManual = function(nokk) {
-    window.closeManualScanModal();
-    window.handleScannedCode(nokk);
-  };
-
-  window.loadScanHistory = async function() {
-    const container = document.getElementById('scan-history-container');
-    if (!container) return;
-
-    try {
-      const { db } = await import('./db.js');
-      const { collection, getDocs } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
-
-      const querySnapshot = await getDocs(collection(db, "scan_history"));
-      if (querySnapshot.empty) {
-        container.innerHTML = `<div class="bg-slate-900/60 border border-slate-700/50 p-3 rounded-2xl text-center text-xs text-slate-400">Belum ada catatan jimpitan warga hari ini.</div>`;
-        return;
-      }
-
-      let html = '';
-      querySnapshot.forEach((docSnap) => {
-        const data = docSnap.data();
-        const docId = docSnap.id;
-        const isPasang = data.statusJimpitan === 'Pasang';
-        const badgeColor = isPasang ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border-rose-500/30';
-        const iconClass = isPasang ? 'fa-circle-check text-emerald-400' : 'fa-circle-xmark text-rose-400';
-
-        html += `
-          <div class="bg-slate-900/60 border border-slate-700/50 p-3 rounded-2xl flex items-center justify-between text-xs">
-            <div class="flex items-center space-x-2.5">
-              <div class="w-8 h-8 rounded-xl ${badgeColor} border flex items-center justify-center font-bold shrink-0">
-                <i class="fa-solid ${iconClass}"></i>
-              </div>
-              <div>
-                <p class="font-bold text-white">${data.namakk || 'Warga'} <span class="text-[10px] text-purple-400 font-mono font-normal">(KK: ${data.nokk || '-'})</span></p>
-                <p class="text-[10px] text-slate-400">Petugas: ${data.petugas || 'Petugas'} • <span class="text-emerald-400 font-semibold">Rp ${data.nominal || '0'}</span> • <span class="text-slate-400">${data.waktu || ''}</span></p>
-              </div>
-            </div>
-            
-            <div class="flex items-center space-x-2 shrink-0">
-              <span class="text-[10px] ${isPasang ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300'} px-2 py-1 rounded-lg font-bold">${data.statusJimpitan}</span>
-              <button type="button" onclick="window.openEditJimpitanModal('${docId}', '${String(data.namakk).replace(/'/g, "\\'")}', '${data.nokk}', '${data.statusJimpitan}')" class="w-7 h-7 bg-slate-800 hover:bg-amber-600 text-slate-300 hover:text-white rounded-lg flex items-center justify-center transition cursor-pointer" title="Edit">
-                <i class="fa-solid fa-pen text-[10px]"></i>
-              </button>
-              <button type="button" onclick="window.deleteScanHistory('${docId}', '${String(data.namakk).replace(/'/g, "\\'")}')" class="w-7 h-7 bg-slate-800 hover:bg-rose-600 text-slate-300 hover:text-white rounded-lg flex items-center justify-center transition cursor-pointer" title="Hapus">
-                <i class="fa-solid fa-trash text-[10px]"></i>
-              </button>
-            </div>
-          </div>
-        `;
-      });
-      container.innerHTML = html;
-    } catch (err) {
-      container.innerHTML = `<div class="bg-slate-900/60 border border-slate-700/50 p-3 rounded-2xl text-center text-xs text-rose-400">Gagal memuat riwayat.</div>`;
-    }
-  };
-
-  // Muat riwayat saat halaman aktif
-  setTimeout(() => {
-    window.loadScanHistory();
-  }, 300);
+  });
 </script>
