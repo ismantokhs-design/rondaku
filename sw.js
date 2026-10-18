@@ -2,41 +2,48 @@ const CACHE_NAME = 'ronda-pwa-v1';
 const urlsToCache = [
   './',
   './index.html',
+  './login.html',
   './manifest.json',
-  './pages/home.html',
-  './pages/jadwal.html',
-  './pages/laporan.html',
-  './pages/pos.html',
-  './pages/koordinator.html',
   './assets/js/app.js',
-  './assets/js/firebase-config.js',
-  'https://cdn.tailwindcss.com',
-  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
+  './assets/js/firebase-config.js'
 ];
 
-// Install Service Worker
+// Install Service Worker & Cache File Utama
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('Cache terbuka');
+        console.log('Cache PWA Ronda-Ku terbuka');
+        // Menggunakan addAll dengan aman
         return cache.addAll(urlsToCache);
       })
+      .then(() => self.skipWaiting())
   );
 });
 
-// Fetch Cache / Offline Support
+// Fetch Cache / Offline Support dengan Strategi Stale-While-Revalidate / Network Fallback
 self.addEventListener('fetch', event => {
+  // Lewati request yang bukan GET (misal: Firestore / API eksternal)
+  if (event.request.method !== 'GET') return;
+
   event.respondWith(
     caches.match(event.request)
-      .then(response => {
-        // Kembalikan dari cache jika ada, jika tidak ambil dari jaringan
-        if (response) {
-          return response;
+      .then(cachedResponse => {
+        // Kembalikan dari cache jika ada
+        if (cachedResponse) {
+          return cachedResponse;
         }
-        return fetch(event.request);
-      }
-    )
+        // Jika tidak ada di cache, ambil dari jaringan
+        return fetch(event.request).then(networkResponse => {
+          // Opsional: Simpan dinamis file yang baru diakses ke cache
+          return networkResponse;
+        }).catch(() => {
+          // Fallback jika offline total dan halaman tidak ditemukan
+          if (event.request.headers.get('accept').includes('text/html')) {
+            return caches.match('./index.html');
+          }
+        });
+      })
   );
 });
 
@@ -48,10 +55,11 @@ self.addEventListener('activate', event => {
       return Promise.all(
         cacheNames.map(cacheName => {
           if (cacheWhitelist.indexOf(cacheName) === -1) {
+            console.log('Menghapus cache lama:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
-    })
+    }).then(() => self.clients.claim())
   );
 });
