@@ -158,11 +158,16 @@
   </div>
 </div>
 
+<!-- PUSTAKA HTML5 QR CODE SCANNER CDN -->
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
 <!-- SKRIP LOGIKA SCANNER, VALIDASI DUPLIKASI, & MANAJEMEN RIWAYAT -->
 <script>
   let scannedWargaData = null;
   let cachedNilaiJimpitan = "1.000";
   let allWargaCache = [];
+  let html5QrCode = null;
+  let isFlashOn = false;
 
   // Ambil besaran jimpitan dari pengaturan database saat halaman dimuat
   async function fetchNilaiJimpitanConfig() {
@@ -180,6 +185,71 @@
   }
   fetchNilaiJimpitanConfig();
 
+  // Inisialisasi dan Menyalakan Kamera Scanner
+  async function startScanner() {
+    const placeholder = document.getElementById('scanner-placeholder');
+    
+    try {
+      html5QrCode = new Html5Qrcode("reader");
+      
+      const config = { 
+        fps: 10, 
+        qrbox: { width: 250, height: 250 },
+        aspectRatio: 1.0
+      };
+
+      await html5QrCode.start(
+        { facingMode: "environment" }, 
+        config,
+        (decodedText, decodedResult) => {
+          if (typeof window.handleQRCodeScanned === 'function') {
+            window.handleQRCodeScanned(decodedText);
+          }
+        },
+        (errorMessage) => {
+          // Frame scan error diabaikan agar berjalan kontinyu
+        }
+      );
+
+      if (placeholder) {
+        placeholder.style.display = 'none';
+      }
+    } catch (err) {
+      console.error("Gagal menyalakan kamera:", err);
+      if (placeholder) {
+        placeholder.innerHTML = `
+          <div class="space-y-2 text-rose-400 p-4 text-center">
+            <i class="fa-solid fa-triangle-exclamation text-3xl"></i>
+            <p class="text-xs">Gagal mengakses kamera. Pastikan izin kamera aktif atau gunakan tombol Cari No. KK / Manual di bawah.</p>
+          </div>
+        `;
+      }
+    }
+  }
+
+  // Kontrol Senter / Flash
+  window.toggleFlashlight = async function() {
+    if (!html5QrCode) return;
+    try {
+      const capabilities = html5QrCode.getRunningTrackCameraCapabilities();
+      if (capabilities.torch !== undefined) {
+        isFlashOn = !isFlashOn;
+        await html5QrCode.applyVideoConstraints({
+          advanced: [{ torch: isFlashOn }]
+        });
+        if (typeof window.showToast === 'function') {
+          window.showToast(isFlashOn ? "Senter diaktifkan" : "Senter dimatikan");
+        }
+      } else {
+        if (typeof window.showToast === 'function') {
+          window.showToast("Perangkat tidak mendukung kontrol senter", "warning");
+        }
+      }
+    } catch (err) {
+      console.error("Gagal mengontrol senter:", err);
+    }
+  };
+
   // Ketika QR Code terbaca / warga dipilih (Dengan Validasi Duplikasi Hari Ini)
   window.handleQRCodeScanned = async function(noKKInput) {
     const cleanNoKK = String(noKKInput).trim();
@@ -189,7 +259,6 @@
       const { db } = await import('./db.js');
       const { collection, getDocs, query, where } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
 
-      // Cek apakah warga sudah tercatat diabsen/jimpitan pada hari ini
       const todayStr = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
       const historyQuery = query(collection(db, "scan_history"), where("nokk", "==", cleanNoKK));
       const historySnapshot = await getDocs(historyQuery);
@@ -209,7 +278,6 @@
         return;
       }
 
-      // Ambil data warga dari koleksi "warga"
       const q = query(collection(db, "warga"), where("nokk", "==", cleanNoKK));
       const querySnapshot = await getDocs(q);
 
@@ -503,7 +571,7 @@
     window.handleQRCodeScanned(nokk);
   };
 
-  // Memuat Riwayat Scan & Jimpitan (Dilengkapi Tombol Edit & Hapus)
+  // Memuat Riwayat Scan & Jimpitan
   window.loadScanHistory = async function() {
     const container = document.getElementById('scan-history-container');
     if (!container) return;
@@ -574,5 +642,9 @@
     }
   };
 
-  window.loadScanHistory();
+  // Jalankan scanner kamera saat halaman dimuat
+  window.addEventListener('DOMContentLoaded', () => {
+    setTimeout(startScanner, 400);
+    window.loadScanHistory();
+  });
 </script>
